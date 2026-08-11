@@ -1,0 +1,27 @@
+@model IEnumerable<AdminPannel.Models.EmployeeResponse>
+
+@if (Model != null)
+{
+    int i = 1;
+    foreach (var e in Model)
+    {
+        <tr>
+            <td>@i</td>
+            <td>@e.FullName</td>
+            <td>@e.Email</td>
+            <td>@e.PhoneNumber</td>
+            <td>@(e.DepartmentName ?? "")</td>
+            <td>@(e.DesignationName ?? "")</td>
+            <td>@(e.IsActive ? "Yes" : "No")</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary btn-edit" data-id="@e.EmployeeID">Edit</button>
+                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="@e.EmployeeID">Delete</button>
+            </td>
+        </tr>
+        i++;
+    }
+}
+else
+{
+    <tr><td colspan="8">No records found.</td></tr>
+}
