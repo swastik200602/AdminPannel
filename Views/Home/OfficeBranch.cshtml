@@ -1,0 +1,242 @@
+@{
+    ViewData["Title"] = "Office Branch";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!--begin::App Content Header-->
+<div class="app-content-header">
+    <!--begin::Container-->
+    <div class="container-fluid">
+        <!--begin::Row-->
+        <div class="row">
+            <div class="col-sm-6">
+                <h1 class="mb-0 fs-3">Office Branch</h1>
+            </div>
+            <div class="col-sm-6">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Office Branch</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <!--end::Row-->
+    </div>
+    <!--end::Container-->
+</div>
+<!--end::App Content Header-->
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="row g-4">
+
+            <!-- Quick Example -->
+            <div class="col-md-6">
+                <div class="card card-primary card-outline mb-4">
+                    <div class="card-header">
+                        <div class="card-title">Quick Example</div>
+                    </div>
+                    <form id="officeBranchForm">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <input type="hidden" id="OfficeLocationID" name="OfficeLocationID" value="0" />
+
+                            <div class="mb-3">
+                                <label for="OfficeName" class="form-label">Office Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="OfficeName" name="OfficeName" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="OfficeCode" class="form-label">Office Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="OfficeCode" name="OfficeCode" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="AddressLine1" class="form-label">Address Line 1 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="AddressLine1" name="AddressLine1" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="AddressLine2" class="form-label">Address Line 2</label>
+                                <input type="text" class="form-control" id="AddressLine2" name="AddressLine2" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="City" class="form-label">City <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="City" name="City" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="State" class="form-label">State <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="State" name="State" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="Country" class="form-label">Country <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="Country" name="Country" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="PostalCode" class="form-label">Postal Code</label>
+                                <input type="text" class="form-control" id="PostalCode" name="PostalCode" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="PhoneNumber" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="Email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="Email" name="Email" />
+                            </div>
+
+                        </div>
+                        <div class="card-footer">
+                            <button type="button" id="btnSubmit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Office Branch List -->
+            <div class="col-md-6">
+                <div class="card card-info card-outline mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Office Branch List</h3>
+                    </div>
+
+                    <div class="card-body p-0" id="officeBranchList">
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        LoadOfficeBranchList()
+    });
+
+    function LoadOfficeBranchList() {
+        $.ajax({
+            url: '@Url.Action("GetOfficeBranch", "Home")',
+            type: 'GET',
+            success: function (response) {
+                $("#officeBranchList").html(response);
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                alert("Failed to load office branch list.");
+            }
+        });
+    }
+
+    function DeleteOfficeBranch(id) {
+        if (!confirm('Delete office branch?')) return;
+        var token = $('input[name="__RequestVerificationToken"]').first().val();
+        $.ajax({
+            url: '@Url.Action("DeleteOfficeBranch", "Home")',
+            type: 'POST',
+            data: { id: id },
+            headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
+            success: function (res) {
+                if (res && res.success) {
+                    alert(res.message);
+                    LoadOfficeBranchList();
+                } else {
+                    alert(res && res.message ? res.message : 'Delete failed');
+                }
+            },
+            error: function (err) { console.log(err); alert('Server error'); }
+        });
+    }
+
+    function EditOfficeBranch(id) {
+        var model = {
+            OfficeLocationID: id
+        };
+
+        $.ajax({
+            url: '@Url.Action("GetOfficeBranchById", "Home")',
+            type: 'GET',
+            data: model,
+            success: function (response) {
+                // populate all editable fields (response is camel-cased JSON from ASP.NET Core)
+                $("#OfficeLocationID").val(response.officeLocationID || 0);
+                $("#OfficeName").val(response.officeName || '');
+                $("#OfficeCode").val(response.officeCode || '');
+                $("#AddressLine1").val(response.addressLine1 || '');
+                $("#AddressLine2").val(response.addressLine2 || '');
+                $("#City").val(response.city || '');
+                $("#State").val(response.state || '');
+                $("#Country").val(response.country || '');
+                $("#PostalCode").val(response.postalCode || '');
+                $("#PhoneNumber").val(response.phoneNumber || '');
+                $("#Email").val(response.email || '');
+                // scroll to form (optional)
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // change submit button to Update when editing
+                $("#btnSubmit").text('Update');
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                alert("Failed to load office branch.");
+            }
+        });
+    }
+
+    $("#btnSubmit").click(function (e) {
+        e.preventDefault();
+
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        var officeBranchData = {
+            OfficeLocationID: parseInt($("#OfficeLocationID").val() || 0),
+            OfficeName: $("#OfficeName").val(),
+            OfficeCode: $("#OfficeCode").val(),
+            AddressLine1: $("#AddressLine1").val(),
+            AddressLine2: $("#AddressLine2").val(),
+            City: $("#City").val(),
+            State: $("#State").val(),
+            Country: $("#Country").val(),
+            PostalCode: $("#PostalCode").val(),
+            PhoneNumber: $("#PhoneNumber").val(),
+            Email: $("#Email").val()
+        };
+
+        $.ajax({
+            url: '@Url.Action("OfficeBranch", "Home")',
+            type: 'POST',
+            data: officeBranchData,
+            headers: {
+                'RequestVerificationToken': token,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function (response) {
+                if (response && response.success) {
+                    alert(response.message);
+                    $("#officeBranchForm")[0].reset();
+                    $("#OfficeLocationID").val(0);
+                    // refresh the list
+                    LoadOfficeBranchList();
+                    // reset button text to Submit after save
+                    $("#btnSubmit").text('Submit');
+                } else {
+                    alert(response && response.message ? response.message : "Operation failed.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                alert("Something went wrong!");
+            }
+        });
+
+    });
+
+</script>

@@ -1,27 +1,64 @@
 @model IEnumerable<AdminPannel.Models.EmployeeResponse>
+@{
+    var canManage = User.IsInRole("Admin") || User.IsInRole("HR");
+    var isEmployee = User.IsInRole("Employee");
+}
 
-@if (Model != null)
+@if (Model == null || !Model.Any())
 {
-    int i = 1;
-    foreach (var e in Model)
-    {
-        <tr>
-            <td>@i</td>
-            <td>@e.FullName</td>
-            <td>@e.Email</td>
-            <td>@e.PhoneNumber</td>
-            <td>@(e.DepartmentName ?? "")</td>
-            <td>@(e.DesignationName ?? "")</td>
-            <td>@(e.IsActive ? "Yes" : "No")</td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary btn-edit" data-id="@e.EmployeeID">Edit</button>
-                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="@e.EmployeeID">Delete</button>
-            </td>
-        </tr>
-        i++;
-    }
+    <div class="alert alert-info m-3">No employees found.</div>
 }
 else
 {
-    <tr><td colspan="8">No records found.</td></tr>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Manager</th>
+                    <th>Employment</th>
+                    <th>Joining Date</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.EmployeeCode</td>
+                        <td>@item.FullName</td>
+                        <td>@item.Email</td>
+                        <td>@item.PhoneNumber</td>
+                        <td>@item.DepartmentName</td>
+                        <td>@item.DesignationName</td>
+                        <td>@item.ManagerName</td>
+                        <td>@item.EmploymentType</td>
+                        <td>@item.JoiningDate?.ToString("yyyy-MM-dd")</td>
+                        <td>@(item.IsActive ? "Yes" : "No")</td>
+                        <td class="text-nowrap">
+                            <a asp-action="Details" asp-route-id="@item.EmployeeID" class="btn btn-sm btn-outline-info">Details</a>
+                            @if (canManage)
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.EmployeeID" class="btn btn-sm btn-outline-success">Edit</a>
+                                <form asp-action="Delete" asp-route-id="@item.EmployeeID" method="post" class="d-inline" onsubmit="return confirm('Delete this employee?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            }
+                            else if (isEmployee)
+                            {
+                                <a asp-action="EditSelf" class="btn btn-sm btn-outline-success">Edit profile</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }

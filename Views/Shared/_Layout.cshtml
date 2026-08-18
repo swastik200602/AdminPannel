@@ -1,5 +1,19 @@
 ﻿<!doctype html>
 <html lang="en">
+@{
+  var firstName = User.FindFirst("FirstName")?.Value;
+  var lastName = User.FindFirst("LastName")?.Value;
+  var displayName = $"{firstName} {lastName}".Trim();
+  if (string.IsNullOrWhiteSpace(displayName))
+  {
+    displayName = User.Identity?.Name ?? "User";
+  }
+
+  var roleName = User.FindFirst("RoleName")?.Value ?? "User";
+  var isAdmin = User.IsInRole("Admin");
+  var canManageHrMaster = isAdmin || User.IsInRole("HR");
+}
+
   <!--begin::Head-->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -352,9 +366,9 @@
                   <img
                         src='@Url.Content("~/assets/img/user2-160x160.jpg")'
                         class="user-image rounded-circle shadow"
-                        alt="Alexander Pierce"
+                        alt="User profile"
                       />
-                <span class="d-none d-md-inline">Alexander Pierce</span>
+                <span class="d-none d-md-inline">@displayName</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                 <!--begin::User Image-->
@@ -362,35 +376,20 @@
                    <img
                     src='@Url.Content("~/assets/img/user2-160x160.jpg")'
                     class="rounded-circle shadow"
-                    alt="Alexander Pierce"
+                    alt="User profile"
                   />
                   <p>
-                    Alexander Pierce - Web Developer
-                    <small>Member since Nov. 2023</small>
+                    @displayName
+                    <small>@roleName</small>
                   </p>
                 </li>
                 <!--end::User Image-->
-                <!--begin::Menu Body-->
-                <li class="user-body">
-                  <!--begin::Row-->
-                  <div class="row">
-                    <div class="col-4 text-center">
-                      <a href="#">Followers</a>
-                    </div>
-                    <div class="col-4 text-center">
-                      <a href="#">Sales</a>
-                    </div>
-                    <div class="col-4 text-center">
-                      <a href="#">Friends</a>
-                    </div>
-                  </div>
-                  <!--end::Row-->
-                </li>
-                <!--end::Menu Body-->
                 <!--begin::Menu Footer-->
                 <li class="user-footer">
-                  <a href="#" class="btn btn-outline-secondary">Profile</a>
-                  <a href="#" class="btn btn-outline-danger float-end">Sign out</a>
+                  <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger float-end">Sign out</button>
+                  </form>
                 </li>
                 <!--end::Menu Footer-->
               </ul>
@@ -440,6 +439,8 @@
                 </a>
               </li>
               
+              @if (canManageHrMaster)
+              {
               <li class="nav-item">
                 <a href="#" class="nav-link">
                   <i class="nav-icon bi bi-box-seam-fill"></i>
@@ -456,25 +457,60 @@
                     </a>
                   </li>
                   <li class="nav-item">
-                    <a href='@Url.Action("Index","Employee")' class="nav-link">
-                      <i class="nav-icon bi bi-people"></i>
-                      <p>Employees</p>
-                    </a>
+                   <a href="/Home/Designation" class="nav-link">
+                     <i class="nav-icon bi bi-circle"></i>
+                     <p>Designation</p>
+                   </a>
                   </li>
                   <li class="nav-item">
-                    <a href="./widgets/info-box.html" class="nav-link">
+                   <a href="/Home/OfficeBranch" class="nav-link">
+                     <i class="nav-icon bi bi-circle"></i>
+                     <p>Office Branch</p>
+                   </a>
+                  </li>
+                  @if (isAdmin)
+                  {
+                  <li class="nav-item">
+                    <a href="/Home/Role" class="nav-link">
                       <i class="nav-icon bi bi-circle"></i>
-                      <p>info Box</p>
+                      <p>Role</p>
                     </a>
+                  </li>
+                  }
+                  <li class="nav-item">
+                   <a href="/Home/Shift" class="nav-link">
+                     <i class="nav-icon bi bi-circle"></i>
+                     <p>Shift</p>
+                   </a>
                   </li>
                   <li class="nav-item">
-                    <a href="./widgets/cards.html" class="nav-link">
-                      <i class="nav-icon bi bi-circle"></i>
-                      <p>Cards</p>
-                    </a>
+                   <a href="/Home/LeaveType" class="nav-link">
+                     <i class="nav-icon bi bi-circle"></i>
+                     <p>Leave Type</p>
+                   </a>
                   </li>
-                </ul>
-              </li> 
+                  <li class="nav-item">
+                   <a href="/Home/Holiday" class="nav-link">
+                     <i class="nav-icon bi bi-circle"></i>
+                     <p>Holiday</p>
+                   </a>
+                  </li>
+                  <!-- Employees menu removed -->
+                  </ul>
+              </li>
+              }
+            <li class="nav-item">
+                <a asp-controller="Employee" asp-action="Index" class="nav-link">
+                  <i class="nav-icon bi bi-people"></i>
+                  <p>Employees</p>
+                </a>
+            </li>
+            @if (isAdmin)
+            {
+                <li class="nav-item">
+                    <a asp-controller="User" asp-action="Index" class="nav-link"><i class="nav-icon bi bi-person-lock"></i><p>User Accounts</p></a>
+                </li>
+            }
             </ul>
             <!--end::Sidebar Menu-->
 
@@ -757,6 +793,7 @@
       sparkline3.render();
     </script>
     <!--end::Script-->
+    @RenderSection("Scripts", required: false)
   </body>
   <!--end::Body-->
 </html>

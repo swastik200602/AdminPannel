@@ -1,7 +1,8 @@
-﻿@{
-    ViewData["Title"] = "Department";
+@{
+    ViewData["Title"] = "Leave Type";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <!--begin::App Content Header-->
 <div class="app-content-header">
     <!--begin::Container-->
@@ -9,13 +10,13 @@
         <!--begin::Row-->
         <div class="row">
             <div class="col-sm-6">
-                <h1 class="mb-0 fs-3">Department</h1>
+                <h1 class="mb-0 fs-3">Leave Type</h1>
             </div>
             <div class="col-sm-6">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Department</li>
+                        <li class="breadcrumb-item active" aria-current="page">Leave Type</li>
                     </ol>
                 </nav>
             </div>
@@ -35,25 +36,31 @@
                     <div class="card-header">
                         <div class="card-title">Quick Example</div>
                     </div>
-    <form id="departmentForm">
-        @Html.AntiForgeryToken()
+                    <form id="leaveTypeForm">
+                        @Html.AntiForgeryToken()
                         <div class="card-body">
-                            <input type="hidden" id="DepartmentID" name="DepartmentID" value="0" />
-                            <div class="mb-3">
-                                <label for="exampleInputEmail1" class="form-label">Department Name</label>
-                                <input type="text"
-                                       class="form-control"
-                                       id="DepartmentName"
-                                       name="DepartmentName" />
+                            <input type="hidden" id="LeaveTypeID" name="LeaveTypeID" value="0" />
 
-                            </div>
                             <div class="mb-3">
-                                <label for="exampleInputPassword1" class="form-label">Department Code</label>
-                                <input type="text" class="form-control" id="DepartmentCode" name="DepartmentCode" />
+                                <label for="LeaveTypeName" class="form-label">Leave Type Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="LeaveTypeName" name="LeaveTypeName" required />
                             </div>
+
                             <div class="mb-3">
-                                <label for="exampleInputPassword1" class="form-label">Description</label>
-                                <input type="text" class="form-control" id="Description" name="Description" />
+                                <label for="LeaveCode" class="form-label">Leave Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="LeaveCode" name="LeaveCode" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="MaxLeavesPerYear" class="form-label">Max Leaves Per Year <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="MaxLeavesPerYear" name="MaxLeavesPerYear" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="IsPaidLeave" name="IsPaidLeave" />
+                                    <label class="form-check-label" for="IsPaidLeave">Paid Leave</label>
+                                </div>
                             </div>
 
                         </div>
@@ -64,66 +71,56 @@
                 </div>
             </div>
 
-             
-            <!-- Checks & Radios -->
+            <!-- Leave Type List -->
             <div class="col-md-6">
                 <div class="card card-info card-outline mb-4">
                     <div class="card-header">
-                        <h3 class="card-title">Department List</h3>
-                         
+                        <h3 class="card-title">Leave Type List</h3>
                     </div>
 
-                
-                    <div class="card-body p-0" id="departmentList">
-                      
+                    <div class="card-body p-0" id="leaveTypeList">
                     </div>
-
 
                 </div>
             </div>
 
-              
-        
         </div>
     </div>
 </div>
 
-
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
- 
 <script>
-
-     $(document).ready(function() {
-      LoadDepartmentList()
+    $(document).ready(function() {
+        LoadLeaveTypeList()
     });
 
-    function LoadDepartmentList() {
+    function LoadLeaveTypeList() {
         $.ajax({
-            url: '@Url.Action("GetDepartment", "Home")',
+            url: '@Url.Action("GetLeaveType", "Home")',
             type: 'GET',
             success: function (response) {
-                $("#departmentList").html(response);
+                $("#leaveTypeList").html(response);
             },
             error: function (xhr, status, error) {
                 console.log(xhr.responseText);
-                alert("Failed to load department list.");
+                alert("Failed to load leave type list.");
             }
         });
     }
 
-    function DeleteDepartment(id) {
-        if (!confirm('Delete department?')) return;
+    function DeleteLeaveType(id) {
+        if (!confirm('Delete leave type?')) return;
         var token = $('input[name="__RequestVerificationToken"]').first().val();
         $.ajax({
-            url: '@Url.Action("DeleteDepartment", "Home")',
+            url: '@Url.Action("DeleteLeaveType", "Home")',
             type: 'POST',
             data: { id: id },
             headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
             success: function (res) {
                 if (res && res.success) {
                     alert(res.message);
-                    LoadDepartmentList();
+                    LoadLeaveTypeList();
                 } else {
                     alert(res && res.message ? res.message : 'Delete failed');
                 }
@@ -132,53 +129,52 @@
         });
     }
 
-    function EditDepartment(id) {
-        var model={
-        DepartmentID:id
+    function EditLeaveType(id) {
+        var model = {
+            LeaveTypeID: id
         };
 
         $.ajax({
-            url: '@Url.Action("GetDepartmentById", "Home")',
+            url: '@Url.Action("GetLeaveTypeById", "Home")',
             type: 'GET',
-            data:model,
+            data: model,
             success: function (response) {
-              // populate all editable fields (response is camel-cased JSON from ASP.NET Core)
-              $("#DepartmentID").val(response.departmentID || 0);
-              $("#DepartmentName").val(response.departmentName || '');
-              $("#DepartmentCode").val(response.departmentCode || '');
-              $("#Description").val(response.description || '');
-              // scroll to form (optional)
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              // change submit button to Update when editing
-              $("#btnSubmit").text('Update');
+                // populate all editable fields (response is camel-cased JSON from ASP.NET Core)
+                $("#LeaveTypeID").val(response.leaveTypeID || 0);
+                $("#LeaveTypeName").val(response.leaveTypeName || '');
+                $("#LeaveCode").val(response.leaveCode || '');
+                $("#MaxLeavesPerYear").val(response.maxLeavesPerYear || 0);
+                $("#IsPaidLeave").prop('checked', response.isPaidLeave || false);
+
+                // scroll to form (optional)
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // change submit button to Update when editing
+                $("#btnSubmit").text('Update');
             },
             error: function (xhr, status, error) {
                 console.log(xhr.responseText);
-                alert("Failed to load department list.");
+                alert("Failed to load leave type.");
             }
         });
     }
 
-
-
-
-     
     $("#btnSubmit").click(function (e) {
         e.preventDefault();
 
         var token = $('input[name="__RequestVerificationToken"]').val();
 
-        var departmentData = {
-            DepartmentID: parseInt($("#DepartmentID").val() || 0),
-            DepartmentName: $("#DepartmentName").val(),
-            DepartmentCode: $("#DepartmentCode").val(),
-            Description: $("#Description").val()
+        var leaveTypeData = {
+            LeaveTypeID: parseInt($("#LeaveTypeID").val() || 0),
+            LeaveTypeName: $("#LeaveTypeName").val(),
+            LeaveCode: $("#LeaveCode").val(),
+            MaxLeavesPerYear: parseInt($("#MaxLeavesPerYear").val() || 0),
+            IsPaidLeave: $("#IsPaidLeave").is(':checked')
         };
 
         $.ajax({
-            url: '@Url.Action("Department", "Home")',
+            url: '@Url.Action("LeaveType", "Home")',
             type: 'POST',
-            data: departmentData,
+            data: leaveTypeData,
             headers: {
                 'RequestVerificationToken': token,
                 'X-Requested-With': 'XMLHttpRequest'
@@ -186,10 +182,11 @@
             success: function (response) {
                 if (response && response.success) {
                     alert(response.message);
-                    $("#departmentForm")[0].reset();
-                    $("#DepartmentID").val(0);
+                    $("#leaveTypeForm")[0].reset();
+                    $("#LeaveTypeID").val(0);
+                    $("#IsPaidLeave").prop('checked', false);
                     // refresh the list
-                    LoadDepartmentList();
+                    LoadLeaveTypeList();
                     // reset button text to Submit after save
                     $("#btnSubmit").text('Submit');
                 } else {
@@ -203,6 +200,5 @@
         });
 
     });
-</script>
 
-                                    
+</script>

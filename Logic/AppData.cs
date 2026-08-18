@@ -187,24 +187,13 @@ namespace AdminPannel.Logic
 
         public List<T> SelectModelList<T>(string proc, object param)
         {
-            var result = (dynamic)null;
-            try
-            {
-                using (var con = new SqlConnection(_connection))
-                {
-                    con.Open();
-                    result = con.Query<T>(proc, param, commandType: System.Data.CommandType.StoredProcedure);
-                    con.Close();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            finally
-            {
-            }
-            return result;
+            using var con = new SqlConnection(_connection);
+            con.Open();
+            return con.Query<T>(
+                    proc,
+                    param,
+                    commandType: CommandType.StoredProcedure)
+                .ToList();
         }
         public (T1, List<T2>) QueryMultiple<T1, T2>(string procName, object param = null)
         {

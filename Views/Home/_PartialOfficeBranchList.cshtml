@@ -1,0 +1,52 @@
+@model List<AdminPannel.Models.OfficeBranchResponse>
+
+@if(Model == null || !Model.Any())
+{
+<div class="alert alert-info">No office branches found.</div>
+}
+else
+{
+<div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th style="width: 5%">#</th>
+                <th style="width: 15%">Office Name</th>
+                <th style="width: 10%">Code</th>
+                <th style="width: 15%">City</th>
+                <th style="width: 12%">State</th>
+                <th style="width: 12%">Country</th>
+                <th style="width: 13%">Phone</th>
+                <th style="width: 18%">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var item in Model)
+            {
+                <tr class="align-middle">
+                    <td>@(Model.IndexOf(item) + 1)</td>
+                    <td><strong>@item.OfficeName</strong></td>
+                    <td>@item.OfficeCode</td>
+                    <td>@item.City</td>
+                    <td>@item.State</td>
+                    <td>@item.Country</td>
+                    <td>@item.PhoneNumber</td>
+                    <td>
+                        @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                        {
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="EditOfficeBranch(@item.OfficeLocationID)" title="Edit">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="DeleteOfficeBranch(@item.OfficeLocationID)" title="Delete">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+}

@@ -1,0 +1,222 @@
+@{
+    ViewData["Title"] = "Holiday";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!--begin::App Content Header-->
+<div class="app-content-header">
+    <!--begin::Container-->
+    <div class="container-fluid">
+        <!--begin::Row-->
+        <div class="row">
+            <div class="col-sm-6">
+                <h1 class="mb-0 fs-3">Holiday</h1>
+            </div>
+            <div class="col-sm-6">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Holiday</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <!--end::Row-->
+    </div>
+    <!--end::Container-->
+</div>
+<!--end::App Content Header-->
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="row g-4">
+
+            <!-- Quick Example -->
+            <div class="col-md-6">
+                <div class="card card-primary card-outline mb-4">
+                    <div class="card-header">
+                        <div class="card-title">Quick Example</div>
+                    </div>
+                    <form id="holidayForm">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <input type="hidden" id="HolidayID" name="HolidayID" value="0" />
+
+                            <div class="mb-3">
+                                <label for="HolidayName" class="form-label">Holiday Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="HolidayName" name="HolidayName" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="HolidayDate" class="form-label">Holiday Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="HolidayDate" name="HolidayDate" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="HolidayType" class="form-label">Holiday Type <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="HolidayType" name="HolidayType" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="Description" class="form-label">Description</label>
+                                <textarea class="form-control" id="Description" name="Description" rows="2"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="IsOptional" name="IsOptional" />
+                                    <label class="form-check-label" for="IsOptional">Optional Holiday</label>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="card-footer">
+                            <button type="button" id="btnSubmit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Holiday List -->
+            <div class="col-md-6">
+                <div class="card card-info card-outline mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Holiday List</h3>
+                    </div>
+
+                    <div class="card-body p-0" id="holidayList">
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        LoadHolidayList()
+    });
+
+    function LoadHolidayList() {
+        $.ajax({
+            url: '@Url.Action("GetHoliday", "Home")',
+            type: 'GET',
+            success: function (response) {
+                $("#holidayList").html(response);
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                alert("Failed to load holiday list.");
+            }
+        });
+    }
+
+    function DeleteHoliday(id) {
+        if (!confirm('Delete holiday?')) return;
+        var token = $('input[name="__RequestVerificationToken"]').first().val();
+        $.ajax({
+            url: '@Url.Action("DeleteHoliday", "Home")',
+            type: 'POST',
+            data: { id: id },
+            headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
+            success: function (res) {
+                if (res && res.success) {
+                    alert(res.message);
+                    LoadHolidayList();
+                } else {
+                    alert(res && res.message ? res.message : 'Delete failed');
+                }
+            },
+            error: function (err) { console.log(err); alert('Server error'); }
+        });
+    }
+
+    function EditHoliday(id) {
+        var model = {
+            HolidayID: id
+        };
+
+        $.ajax({
+            url: '@Url.Action("GetHolidayById", "Home")',
+            type: 'GET',
+            data: model,
+            success: function (response) {
+                // populate all editable fields (response is camel-cased JSON from ASP.NET Core)
+                $("#HolidayID").val(response.holidayID || 0);
+                $("#HolidayName").val(response.holidayName || '');
+
+                // Handle date value - convert to YYYY-MM-DD format for date input
+                var dateStr = response.holidayDate;
+                if (dateStr) {
+                    // If it's a date string like "2024-01-26", use it directly
+                    // If it has time component, extract just the date part
+                    if (dateStr.includes('T')) {
+                        dateStr = dateStr.split('T')[0];
+                    }
+                    $("#HolidayDate").val(dateStr);
+                }
+
+                $("#HolidayType").val(response.holidayType || '');
+                $("#Description").val(response.description || '');
+                $("#IsOptional").prop('checked', response.isOptional || false);
+
+                // scroll to form (optional)
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // change submit button to Update when editing
+                $("#btnSubmit").text('Update');
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                alert("Failed to load holiday.");
+            }
+        });
+    }
+
+    $("#btnSubmit").click(function (e) {
+        e.preventDefault();
+
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        var holidayData = {
+            HolidayID: parseInt($("#HolidayID").val() || 0),
+            HolidayName: $("#HolidayName").val(),
+            HolidayDate: $("#HolidayDate").val(),
+            HolidayType: $("#HolidayType").val(),
+            Description: $("#Description").val(),
+            IsOptional: $("#IsOptional").is(':checked')
+        };
+
+        $.ajax({
+            url: '@Url.Action("Holiday", "Home")',
+            type: 'POST',
+            data: holidayData,
+            headers: {
+                'RequestVerificationToken': token,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function (response) {
+                if (response && response.success) {
+                    alert(response.message);
+                    $("#holidayForm")[0].reset();
+                    $("#HolidayID").val(0);
+                    $("#IsOptional").prop('checked', false);
+                    // refresh the list
+                    LoadHolidayList();
+                    // reset button text to Submit after save
+                    $("#btnSubmit").text('Submit');
+                } else {
+                    alert(response && response.message ? response.message : "Operation failed.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                alert("Something went wrong!");
+            }
+        });
+
+    });
+
+</script>

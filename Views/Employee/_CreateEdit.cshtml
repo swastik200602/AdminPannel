@@ -1,119 +1,60 @@
 @model AdminPannel.Models.EmployeeRequest
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var isEdit = Model.EmployeeID > 0;
+    ViewData["Title"] = isEdit ? "Edit Employee" : "Create Employee";
+    var departments = ViewBag.Departments as IEnumerable<AdminPannel.Models.DepartmentResponse> ?? Enumerable.Empty<AdminPannel.Models.DepartmentResponse>();
+    var designations = ViewBag.Designations as IEnumerable<AdminPannel.Models.DesignationResponse> ?? Enumerable.Empty<AdminPannel.Models.DesignationResponse>();
+    var offices = ViewBag.OfficeBranches as IEnumerable<AdminPannel.Models.OfficeBranchResponse> ?? Enumerable.Empty<AdminPannel.Models.OfficeBranchResponse>();
+    var shifts = ViewBag.Shifts as IEnumerable<AdminPannel.Models.ShiftResponse> ?? Enumerable.Empty<AdminPannel.Models.ShiftResponse>();
+    var managers = ViewBag.Managers as IEnumerable<AdminPannel.Models.EmployeeResponse> ?? Enumerable.Empty<AdminPannel.Models.EmployeeResponse>();
+    var roles = ViewBag.Roles as IEnumerable<AdminPannel.Models.RoleResponse> ?? Enumerable.Empty<AdminPannel.Models.RoleResponse>();
+}
 
-<form id="employeeForm">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="EmployeeID" value="@Model.EmployeeID" />
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Employee Code</label>
-            <input type="text" class="form-control" id="EmployeeCode" name="EmployeeCode" value="@Model.EmployeeCode" />
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">First Name</label>
-            <input type="text" class="form-control" id="FirstName" name="FirstName" value="@Model.FirstName" />
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Last Name</label>
-            <input type="text" class="form-control" id="LastName" name="LastName" value="@Model.LastName" />
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Gender</label>
-            <input type="text" class="form-control" id="Gender" name="Gender" value="@Model.Gender" />
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Date of Birth</label>
-            <input type="date" class="form-control" id="DateOfBirth" name="DateOfBirth" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" />
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" />
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Phone Number</label>
-            <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber" value="@Model.PhoneNumber" />
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Emergency Contact</label>
-            <input type="text" class="form-control" id="EmergencyContact" name="EmergencyContact" value="@Model.EmergencyContact" />
-        </div>
-        <div class="col-12 mb-3">
-            <label class="form-label">Address</label>
-            <input type="text" class="form-control" id="Address" name="Address" value="@Model.Address" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">City</label>
-            <input type="text" class="form-control" id="City" name="City" value="@Model.City" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">State</label>
-            <input type="text" class="form-control" id="State" name="State" value="@Model.State" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Country</label>
-            <input type="text" class="form-control" id="Country" name="Country" value="@Model.Country" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Postal Code</label>
-            <input type="text" class="form-control" id="PostalCode" name="PostalCode" value="@Model.PostalCode" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Department</label>
-            <select class="form-select" id="DepartmentID" name="DepartmentID">
-                <option value="">-- Select Department --</option>
-                @if (ViewBag.Departments != null)
-                {
-                    foreach (var d in (IEnumerable<AdminPannel.Models.IdNameDto>)ViewBag.Departments)
-                    {
-                        <option value="@d.Id" selected="@(Model.DepartmentID == d.Id ? "selected" : null)">@d.Name</option>
-                    }
-                }
-            </select>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Designation</label>
-            <select class="form-select" id="DesignationID" name="DesignationID">
-                <option value="">-- Select Designation --</option>
-                @if (ViewBag.Designations != null)
-                {
-                    foreach (var d in (IEnumerable<AdminPannel.Models.DesignationDto>)ViewBag.Designations)
-                    {
-                        <option value="@d.DesignationID" selected="@(Model.DesignationID == d.DesignationID ? "selected" : null)">@d.DesignationName</option>
-                    }
-                }
-            </select>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Office Location ID</label>
-            <input type="number" class="form-control" id="OfficeLocationID" name="OfficeLocationID" value="@Model.OfficeLocationID" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Manager ID</label>
-            <input type="number" class="form-control" id="ManagerID" name="ManagerID" value="@Model.ManagerID" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Joining Date</label>
-            <input type="date" class="form-control" id="JoiningDate" name="JoiningDate" value="@(Model.JoiningDate?.ToString("yyyy-MM-dd"))" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Employment Type</label>
-            <input type="text" class="form-control" id="EmploymentType" name="EmploymentType" value="@Model.EmploymentType" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Basic Salary</label>
-            <input type="number" step="0.01" class="form-control" id="BasicSalary" name="BasicSalary" value="@Model.BasicSalary" />
-        </div>
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Shift ID</label>
-            <input type="number" class="form-control" id="ShiftID" name="ShiftID" value="@Model.ShiftID" />
-        </div>
-        <div class="col-md-4 mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" @(Model.IsActive ? "checked" : "") />
-            <label class="form-check-label" for="IsActive">Is Active</label>
+<div class="app-content-header">
+    <div class="container-fluid"><h1 class="mb-0 fs-3">@ViewData["Title"]</h1></div>
+</div>
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@(isEdit ? Model.EmployeeID : null)" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="row g-3">
+                        <div class="col-md-3"><label asp-for="EmployeeCode" class="form-label"></label><input asp-for="EmployeeCode" class="form-control" /><span asp-validation-for="EmployeeCode" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="FirstName" class="form-label"></label><input asp-for="FirstName" class="form-control" /><span asp-validation-for="FirstName" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="LastName" class="form-label"></label><input asp-for="LastName" class="form-control" /><span asp-validation-for="LastName" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="Gender" class="form-label"></label><input asp-for="Gender" class="form-control" /></div>
+                        <div class="col-md-3"><label asp-for="DateOfBirth" class="form-label"></label><input asp-for="DateOfBirth" type="date" class="form-control" /></div>
+                        <div class="col-md-3"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="PhoneNumber" class="form-label"></label><input asp-for="PhoneNumber" class="form-control" /><span asp-validation-for="PhoneNumber" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="EmergencyContact" class="form-label"></label><input asp-for="EmergencyContact" class="form-control" /></div>
+                        <div class="col-md-6"><label asp-for="Address" class="form-label"></label><input asp-for="Address" class="form-control" /><span asp-validation-for="Address" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="City" class="form-label"></label><input asp-for="City" class="form-control" /><span asp-validation-for="City" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="State" class="form-label"></label><input asp-for="State" class="form-control" /><span asp-validation-for="State" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="Country" class="form-label"></label><input asp-for="Country" class="form-control" /><span asp-validation-for="Country" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="PostalCode" class="form-label"></label><input asp-for="PostalCode" class="form-control" /><span asp-validation-for="PostalCode" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="DepartmentID" class="form-label">Department</label><select asp-for="DepartmentID" class="form-select"><option value="0">Select</option>@foreach (var item in departments) { <option value="@item.DepartmentID">@item.DepartmentName</option> }</select><span asp-validation-for="DepartmentID" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="DesignationID" class="form-label">Designation</label><select asp-for="DesignationID" class="form-select"><option value="0">Select</option>@foreach (var item in designations) { <option value="@item.DesignationID">@item.DesignationName</option> }</select><span asp-validation-for="DesignationID" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="OfficeLocationID" class="form-label">Office</label><select asp-for="OfficeLocationID" class="form-select"><option value="0">Select</option>@foreach (var item in offices) { <option value="@item.OfficeLocationID">@item.OfficeName</option> }</select><span asp-validation-for="OfficeLocationID" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="ManagerID" class="form-label">Manager</label><select asp-for="ManagerID" class="form-select"><option value="">None</option>@foreach (var item in managers) { <option value="@item.EmployeeID">@item.FullName (@item.EmployeeCode)</option> }</select></div>
+                        <div class="col-md-3"><label asp-for="JoiningDate" class="form-label"></label><input asp-for="JoiningDate" type="date" class="form-control" /><span asp-validation-for="JoiningDate" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="EmploymentType" class="form-label"></label><input asp-for="EmploymentType" class="form-control" /><span asp-validation-for="EmploymentType" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="BasicSalary" class="form-label"></label><input asp-for="BasicSalary" type="number" step="0.01" min="0" class="form-control" /><span asp-validation-for="BasicSalary" class="text-danger"></span></div>
+                        <div class="col-md-3"><label asp-for="ShiftID" class="form-label">Shift</label><select asp-for="ShiftID" class="form-select"><option value="">None</option>@foreach (var item in shifts) { <option value="@item.ShiftID">@item.ShiftName</option> }</select></div>
+                        <div class="col-md-4"><label asp-for="ProfileImageFile" class="form-label">Profile image</label><input asp-for="ProfileImageFile" type="file" accept=".jpg,.jpeg,.png,.webp" class="form-control" /><small class="text-muted">JPG, PNG, or WEBP up to 5 MB.</small></div>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="col-md-3"><label asp-for="RoleID" class="form-label">Role</label><select asp-for="RoleID" class="form-select"><option value="0">Select</option>@foreach (var item in roles) { <option value="@item.RoleID">@item.RoleName</option> }</select><span asp-validation-for="RoleID" class="text-danger"></span></div>
+                        }
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">@(isEdit ? "Update" : "Create")</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" id="btnSaveEmployee" class="btn btn-primary">Save</button>
-    </div>
-</form>
-<!-- JavaScript for save is handled in Index scripts via delegated handler -->
+</div>

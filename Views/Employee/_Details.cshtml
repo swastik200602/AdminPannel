@@ -1,0 +1,44 @@
+@model AdminPannel.Models.EmployeeResponse
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Employee Details";
+    var canManage = User.IsInRole("Admin") || User.IsInRole("HR");
+}
+
+<div class="app-content-header"><div class="container-fluid"><h1 class="mb-0 fs-3">Employee Details</h1></div></div>
+<div class="app-content"><div class="container-fluid">
+    <div class="card"><div class="card-body">
+        @if (!string.IsNullOrWhiteSpace(Model.ProfileImage))
+        {
+            <img src="@Model.ProfileImage" alt="Employee profile image" class="rounded-circle mb-3" style="width:120px;height:120px;object-fit:cover;" />
+        }
+        <h2 class="h4">@Model.FullName</h2>
+        <div class="row g-3">
+            <div class="col-md-4"><strong>Employee Code:</strong> @Model.EmployeeCode</div>
+            <div class="col-md-4"><strong>Email:</strong> @Model.Email</div>
+            <div class="col-md-4"><strong>Phone:</strong> @Model.PhoneNumber</div>
+            <div class="col-md-4"><strong>Department:</strong> @Model.DepartmentName</div>
+            <div class="col-md-4"><strong>Designation:</strong> @Model.DesignationName</div>
+            <div class="col-md-4"><strong>Manager:</strong> @Model.ManagerName</div>
+            <div class="col-md-4"><strong>Joining Date:</strong> @Model.JoiningDate?.ToString("yyyy-MM-dd")</div>
+            <div class="col-md-4"><strong>Employment Type:</strong> @Model.EmploymentType</div>
+            <div class="col-md-4"><strong>Status:</strong> @(Model.IsActive ? "Active" : "Inactive")</div>
+            @if (canManage)
+            {
+                <div class="col-md-4"><strong>Basic Salary:</strong> @Model.BasicSalary.ToString("0.00")</div>
+            }
+            <div class="col-12"><strong>Address:</strong> @Model.Address, @Model.City, @Model.State, @Model.Country, @Model.PostalCode</div>
+        </div>
+        <div class="mt-4">
+            @if (canManage)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.EmployeeID" class="btn btn-success">Edit</a>
+            }
+            else if (User.IsInRole("Employee"))
+            {
+                <a asp-action="EditSelf" class="btn btn-success">Edit profile</a>
+            }
+            <a asp-action="Index" class="btn btn-outline-secondary">Back</a>
+        </div>
+    </div></div>
+</div></div>

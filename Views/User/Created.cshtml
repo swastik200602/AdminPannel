@@ -1,0 +1,11 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "User Account Created";
+}
+<div class="app-content-header"><div class="container-fluid"><h1 class="fs-3">User Account Created</h1></div></div>
+<div class="app-content"><div class="container-fluid"><div class="alert alert-warning">
+    <h2 class="h5">Temporary credentials — show only once</h2>
+    <p>Username: <code>@ViewBag.CreatedUsername</code></p>
+    <p>Password: <code>@ViewBag.TemporaryPassword</code></p>
+    <p class="mb-0">Deliver these credentials through a secure channel. A password-change flow should be enabled before production use.</p>
+</div><a asp-action="Index" class="btn btn-primary">Back to user accounts</a></div></div>

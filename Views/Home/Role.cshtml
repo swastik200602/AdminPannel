@@ -1,7 +1,8 @@
-﻿@{
-    ViewData["Title"] = "Department";
+@{
+    ViewData["Title"] = "Role";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <!--begin::App Content Header-->
 <div class="app-content-header">
     <!--begin::Container-->
@@ -9,13 +10,13 @@
         <!--begin::Row-->
         <div class="row">
             <div class="col-sm-6">
-                <h1 class="mb-0 fs-3">Department</h1>
+                <h1 class="mb-0 fs-3">Role</h1>
             </div>
             <div class="col-sm-6">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Department</li>
+                        <li class="breadcrumb-item active" aria-current="page">Role</li>
                     </ol>
                 </nav>
             </div>
@@ -35,25 +36,19 @@
                     <div class="card-header">
                         <div class="card-title">Quick Example</div>
                     </div>
-    <form id="departmentForm">
-        @Html.AntiForgeryToken()
+                    <form id="roleForm">
+                        @Html.AntiForgeryToken()
                         <div class="card-body">
-                            <input type="hidden" id="DepartmentID" name="DepartmentID" value="0" />
-                            <div class="mb-3">
-                                <label for="exampleInputEmail1" class="form-label">Department Name</label>
-                                <input type="text"
-                                       class="form-control"
-                                       id="DepartmentName"
-                                       name="DepartmentName" />
+                            <input type="hidden" id="RoleID" name="RoleID" value="0" />
 
-                            </div>
                             <div class="mb-3">
-                                <label for="exampleInputPassword1" class="form-label">Department Code</label>
-                                <input type="text" class="form-control" id="DepartmentCode" name="DepartmentCode" />
+                                <label for="RoleName" class="form-label">Role Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="RoleName" name="RoleName" required />
                             </div>
+
                             <div class="mb-3">
-                                <label for="exampleInputPassword1" class="form-label">Description</label>
-                                <input type="text" class="form-control" id="Description" name="Description" />
+                                <label for="Description" class="form-label">Description</label>
+                                <textarea class="form-control" id="Description" name="Description" rows="3"></textarea>
                             </div>
 
                         </div>
@@ -64,66 +59,56 @@
                 </div>
             </div>
 
-             
-            <!-- Checks & Radios -->
+            <!-- Role List -->
             <div class="col-md-6">
                 <div class="card card-info card-outline mb-4">
                     <div class="card-header">
-                        <h3 class="card-title">Department List</h3>
-                         
+                        <h3 class="card-title">Role List</h3>
                     </div>
 
-                
-                    <div class="card-body p-0" id="departmentList">
-                      
+                    <div class="card-body p-0" id="roleList">
                     </div>
-
 
                 </div>
             </div>
 
-              
-        
         </div>
     </div>
 </div>
 
-
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
- 
 <script>
-
-     $(document).ready(function() {
-      LoadDepartmentList()
+    $(document).ready(function() {
+        LoadRoleList()
     });
 
-    function LoadDepartmentList() {
+    function LoadRoleList() {
         $.ajax({
-            url: '@Url.Action("GetDepartment", "Home")',
+            url: '@Url.Action("GetRole", "Home")',
             type: 'GET',
             success: function (response) {
-                $("#departmentList").html(response);
+                $("#roleList").html(response);
             },
             error: function (xhr, status, error) {
                 console.log(xhr.responseText);
-                alert("Failed to load department list.");
+                alert("Failed to load role list.");
             }
         });
     }
 
-    function DeleteDepartment(id) {
-        if (!confirm('Delete department?')) return;
+    function DeleteRole(id) {
+        if (!confirm('Delete role?')) return;
         var token = $('input[name="__RequestVerificationToken"]').first().val();
         $.ajax({
-            url: '@Url.Action("DeleteDepartment", "Home")',
+            url: '@Url.Action("DeleteRole", "Home")',
             type: 'POST',
             data: { id: id },
             headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
             success: function (res) {
                 if (res && res.success) {
                     alert(res.message);
-                    LoadDepartmentList();
+                    LoadRoleList();
                 } else {
                     alert(res && res.message ? res.message : 'Delete failed');
                 }
@@ -132,53 +117,47 @@
         });
     }
 
-    function EditDepartment(id) {
-        var model={
-        DepartmentID:id
+    function EditRole(id) {
+        var model = {
+            RoleID: id
         };
 
         $.ajax({
-            url: '@Url.Action("GetDepartmentById", "Home")',
+            url: '@Url.Action("GetRoleById", "Home")',
             type: 'GET',
-            data:model,
+            data: model,
             success: function (response) {
-              // populate all editable fields (response is camel-cased JSON from ASP.NET Core)
-              $("#DepartmentID").val(response.departmentID || 0);
-              $("#DepartmentName").val(response.departmentName || '');
-              $("#DepartmentCode").val(response.departmentCode || '');
-              $("#Description").val(response.description || '');
-              // scroll to form (optional)
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              // change submit button to Update when editing
-              $("#btnSubmit").text('Update');
+                // populate all editable fields (response is camel-cased JSON from ASP.NET Core)
+                $("#RoleID").val(response.roleID || 0);
+                $("#RoleName").val(response.roleName || '');
+                $("#Description").val(response.description || '');
+                // scroll to form (optional)
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // change submit button to Update when editing
+                $("#btnSubmit").text('Update');
             },
             error: function (xhr, status, error) {
                 console.log(xhr.responseText);
-                alert("Failed to load department list.");
+                alert("Failed to load role.");
             }
         });
     }
 
-
-
-
-     
     $("#btnSubmit").click(function (e) {
         e.preventDefault();
 
         var token = $('input[name="__RequestVerificationToken"]').val();
 
-        var departmentData = {
-            DepartmentID: parseInt($("#DepartmentID").val() || 0),
-            DepartmentName: $("#DepartmentName").val(),
-            DepartmentCode: $("#DepartmentCode").val(),
+        var roleData = {
+            RoleID: parseInt($("#RoleID").val() || 0),
+            RoleName: $("#RoleName").val(),
             Description: $("#Description").val()
         };
 
         $.ajax({
-            url: '@Url.Action("Department", "Home")',
+            url: '@Url.Action("Role", "Home")',
             type: 'POST',
-            data: departmentData,
+            data: roleData,
             headers: {
                 'RequestVerificationToken': token,
                 'X-Requested-With': 'XMLHttpRequest'
@@ -186,10 +165,10 @@
             success: function (response) {
                 if (response && response.success) {
                     alert(response.message);
-                    $("#departmentForm")[0].reset();
-                    $("#DepartmentID").val(0);
+                    $("#roleForm")[0].reset();
+                    $("#RoleID").val(0);
                     // refresh the list
-                    LoadDepartmentList();
+                    LoadRoleList();
                     // reset button text to Submit after save
                     $("#btnSubmit").text('Submit');
                 } else {
@@ -203,6 +182,5 @@
         });
 
     });
-</script>
 
-                                    
+</script>

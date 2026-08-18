@@ -1,0 +1,61 @@
+@model List<AdminPannel.Models.ShiftResponse>
+
+@if(Model == null || !Model.Any())
+{
+<div class="alert alert-info">No shifts found.</div>
+}
+else
+{
+<div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th style="width: 5%">#</th>
+                <th style="width: 20%">Shift Name</th>
+                <th style="width: 12%">Code</th>
+                <th style="width: 12%">Start Time</th>
+                <th style="width: 12%">End Time</th>
+                <th style="width: 10%">Grace Min</th>
+                <th style="width: 10%">Night</th>
+                <th style="width: 19%">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var item in Model)
+            {
+                <tr class="align-middle">
+                    <td>@(Model.IndexOf(item) + 1)</td>
+                    <td><strong>@item.ShiftName</strong></td>
+                    <td>@item.ShiftCode</td>
+                    <td>@item.StartTime.ToString("hh\\:mm")</td>
+                    <td>@item.EndTime.ToString("hh\\:mm")</td>
+                    <td>@item.GraceMinutes</td>
+                    <td>
+                        @if(item.IsNightShift)
+                        {
+                            <span class="badge bg-warning">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">No</span>
+                        }
+                    </td>
+                    <td>
+                        @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                        {
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="EditShift(@item.ShiftID)" title="Edit">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="DeleteShift(@item.ShiftID)" title="Delete">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+}

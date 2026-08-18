@@ -1,0 +1,234 @@
+@{
+    ViewData["Title"] = "Shift";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!--begin::App Content Header-->
+<div class="app-content-header">
+    <!--begin::Container-->
+    <div class="container-fluid">
+        <!--begin::Row-->
+        <div class="row">
+            <div class="col-sm-6">
+                <h1 class="mb-0 fs-3">Shift</h1>
+            </div>
+            <div class="col-sm-6">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Shift</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <!--end::Row-->
+    </div>
+    <!--end::Container-->
+</div>
+<!--end::App Content Header-->
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="row g-4">
+
+            <!-- Quick Example -->
+            <div class="col-md-6">
+                <div class="card card-primary card-outline mb-4">
+                    <div class="card-header">
+                        <div class="card-title">Quick Example</div>
+                    </div>
+                    <form id="shiftForm">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <input type="hidden" id="ShiftID" name="ShiftID" value="0" />
+
+                            <div class="mb-3">
+                                <label for="ShiftName" class="form-label">Shift Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ShiftName" name="ShiftName" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="ShiftCode" class="form-label">Shift Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ShiftCode" name="ShiftCode" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="StartTime" class="form-label">Start Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="StartTime" name="StartTime" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="EndTime" class="form-label">End Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="EndTime" name="EndTime" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="GraceMinutes" class="form-label">Grace Minutes <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="GraceMinutes" name="GraceMinutes" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="IsNightShift" name="IsNightShift" />
+                                    <label class="form-check-label" for="IsNightShift">Night Shift</label>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="card-footer">
+                            <button type="button" id="btnSubmit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Shift List -->
+            <div class="col-md-6">
+                <div class="card card-info card-outline mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Shift List</h3>
+                    </div>
+
+                    <div class="card-body p-0" id="shiftList">
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        LoadShiftList()
+    });
+
+    function LoadShiftList() {
+        $.ajax({
+            url: '@Url.Action("GetShift", "Home")',
+            type: 'GET',
+            success: function (response) {
+                $("#shiftList").html(response);
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                alert("Failed to load shift list.");
+            }
+        });
+    }
+
+    function DeleteShift(id) {
+        if (!confirm('Delete shift?')) return;
+        var token = $('input[name="__RequestVerificationToken"]').first().val();
+        $.ajax({
+            url: '@Url.Action("DeleteShift", "Home")',
+            type: 'POST',
+            data: { id: id },
+            headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
+            success: function (res) {
+                if (res && res.success) {
+                    alert(res.message);
+                    LoadShiftList();
+                } else {
+                    alert(res && res.message ? res.message : 'Delete failed');
+                }
+            },
+            error: function (err) { console.log(err); alert('Server error'); }
+        });
+    }
+
+    function EditShift(id) {
+        var model = {
+            ShiftID: id
+        };
+
+        $.ajax({
+            url: '@Url.Action("GetShiftById", "Home")',
+            type: 'GET',
+            data: model,
+            success: function (response) {
+                // populate all editable fields (response is camel-cased JSON from ASP.NET Core)
+                $("#ShiftID").val(response.shiftID || 0);
+                $("#ShiftName").val(response.shiftName || '');
+                $("#ShiftCode").val(response.shiftCode || '');
+
+                // Handle time values - TimeSpan is serialized as HH:mm:ss
+                var startTime = response.startTime;
+                var endTime = response.endTime;
+
+                // If the time value has seconds, extract HH:mm for time input
+                if (startTime && typeof startTime === 'string') {
+                    $("#StartTime").val(startTime.substring(0, 5));
+                } else {
+                    $("#StartTime").val('');
+                }
+
+                if (endTime && typeof endTime === 'string') {
+                    $("#EndTime").val(endTime.substring(0, 5));
+                } else {
+                    $("#EndTime").val('');
+                }
+
+                $("#GraceMinutes").val(response.graceMinutes || 0);
+                $("#IsNightShift").prop('checked', response.isNightShift || false);
+
+                // scroll to form (optional)
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // change submit button to Update when editing
+                $("#btnSubmit").text('Update');
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                alert("Failed to load shift.");
+            }
+        });
+    }
+
+    $("#btnSubmit").click(function (e) {
+        e.preventDefault();
+
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        var shiftData = {
+            ShiftID: parseInt($("#ShiftID").val() || 0),
+            ShiftName: $("#ShiftName").val(),
+            ShiftCode: $("#ShiftCode").val(),
+            StartTime: $("#StartTime").val(),
+            EndTime: $("#EndTime").val(),
+            GraceMinutes: parseInt($("#GraceMinutes").val() || 0),
+            IsNightShift: $("#IsNightShift").is(':checked')
+        };
+
+        $.ajax({
+            url: '@Url.Action("Shift", "Home")',
+            type: 'POST',
+            data: shiftData,
+            headers: {
+                'RequestVerificationToken': token,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function (response) {
+                if (response && response.success) {
+                    alert(response.message);
+                    $("#shiftForm")[0].reset();
+                    $("#ShiftID").val(0);
+                    $("#IsNightShift").prop('checked', false);
+                    // refresh the list
+                    LoadShiftList();
+                    // reset button text to Submit after save
+                    $("#btnSubmit").text('Submit');
+                } else {
+                    alert(response && response.message ? response.message : "Operation failed.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                alert("Something went wrong!");
+            }
+        });
+
+    });
+
+</script>

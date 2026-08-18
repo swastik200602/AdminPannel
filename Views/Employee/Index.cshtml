@@ -1,154 +1,101 @@
-@model IEnumerable<AdminPannel.Models.EmployeeResponse>
+@model AdminPannel.Models.EmployeePageModel
 @{
     ViewData["Title"] = "Employees";
+    var canManage = User.IsInRole("Admin") || User.IsInRole("HR");
+    var isEmployee = User.IsInRole("Employee");
 }
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3">Employees</h1>
-        <button id="btnAddEmployee" class="btn btn-primary">Add Employee</button>
-    </div>
-
-    <div id="messageArea"></div>
-
-    <div class="card">
-        <div class="card-body p-0">
-            <table class="table table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Department</th>
-                        <th>Designation</th>
-                        <th>Active</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="employeeTableBody">
-                    @Html.Partial("_EmployeeRows", Model)
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Modal for create/edit -->
-<div class="modal fade" id="employeeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Employee</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="employeeModalBody">
-                <!-- partial loaded here -->
-            </div>
-        </div>
-    </div>
-</div>
-
-    <script>
-        $(function () {
-            function showMessage(text, isSuccess) {
-                var cls = isSuccess ? 'alert-success' : 'alert-danger';
-                $('#messageArea').html('<div class="alert ' + cls + ' alert-dismissible">' + text + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0 fs-3">Employees</h1>
+            @if (canManage)
+            {
+                <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Employee</a>
             }
+        </div>
+    </div>
+</div>
 
-            $('#btnAddEmployee').on('click', function () {
-                $.get('@Url.Action("Create", "Employee")', function (html) {
-                    $('#employeeModalBody').html(html);
-                    var modal = new bootstrap.Modal(document.getElementById('employeeModal'));
-                    modal.show();
-                });
-            });
-
-            $(document).on('click', '.btn-edit', function () {
-                var id = $(this).data('id');
-                $.get('@Url.Action("Edit", "Employee")/' + id, function (html) {
-                    $('#employeeModalBody').html(html);
-                    var modal = new bootstrap.Modal(document.getElementById('employeeModal'));
-                    modal.show();
-                });
-            });
-
-            $(document).on('click', '.btn-delete', function () {
-                if (!confirm('Delete employee?')) return;
-                var id = $(this).data('id');
-                var token = $('input[name="__RequestVerificationToken"]').first().val();
-                var btn = $(this);
-                $.ajax({
-                    url: '@Url.Action("Delete", "Employee")',
-                    type: 'POST',
-                    data: { id: id },
-                    headers: { 'RequestVerificationToken': token },
-                    success: function (res) {
-                        if (res && res.success) {
-                            showMessage(res.message, true);
-                            // remove row
-                            btn.closest('tr').remove();
-                        } else {
-                            showMessage(res && res.message ? res.message : 'Delete failed', false);
+<div class="app-content">
+    <div class="container-fluid">
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+        @if (TempData["EmployeeError"] != null)
+        {
+            <div class="alert alert-danger">@TempData["EmployeeError"]</div>
+        }
+        <div class="card mb-3">
+            <div class="card-body">
+                <form asp-action="Index" method="get" class="row g-2">
+                    <div class="col-md-4">
+                        <label asp-for="Filter.Search" class="form-label">Search</label>
+                        <input asp-for="Filter.Search" class="form-control" placeholder="Code, name, email or phone" />
+                    </div>
+                    @if (canManage)
+                    {
+                        <div class="col-md-2">
+                            <label asp-for="Filter.DepartmentID" class="form-label">Department</label>
+                            <select asp-for="Filter.DepartmentID" class="form-select">
+                                <option value="">All</option>
+                                @foreach (var item in Model.Departments)
+                                {
+                                    <option value="@item.DepartmentID">@item.DepartmentName</option>
+                                }
+                            </select>
+                        </div>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="col-md-2">
+                                <label asp-for="Filter.RoleID" class="form-label">Role</label>
+                                <select asp-for="Filter.RoleID" class="form-select">
+                                    <option value="">All</option>
+                                    @foreach (var item in Model.Roles)
+                                    {
+                                        <option value="@item.RoleID">@item.RoleName</option>
+                                    }
+                                </select>
+                            </div>
                         }
-                    },
-                    error: function (err) { showMessage('Server error', false); }
-                });
-            });
+                        <div class="col-md-2">
+                            <label asp-for="Filter.DesignationID" class="form-label">Designation</label>
+                            <select asp-for="Filter.DesignationID" class="form-select">
+                                <option value="">All</option>
+                                @foreach (var item in Model.Designations)
+                                {
+                                    <option value="@item.DesignationID">@item.DesignationName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label asp-for="Filter.OfficeLocationID" class="form-label">Office</label>
+                            <select asp-for="Filter.OfficeLocationID" class="form-select">
+                                <option value="">All</option>
+                                @foreach (var item in Model.OfficeBranches)
+                                {
+                                    <option value="@item.OfficeLocationID">@item.OfficeName</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-            // delegated save handler for dynamically loaded form
-            $(document).on('click', '#btnSaveEmployee', function () {
-                var token = $('#employeeForm').find('input[name="__RequestVerificationToken"]').val();
-                var $form = $('#employeeForm');
-                var data = {
-                    EmployeeID: parseInt($form.find('input[name="EmployeeID"]').val() || 0),
-                    EmployeeCode: $form.find('#EmployeeCode').val(),
-                    FirstName: $form.find('#FirstName').val(),
-                    LastName: $form.find('#LastName').val(),
-                    Gender: $form.find('#Gender').val(),
-                    DateOfBirth: $form.find('#DateOfBirth').val(),
-                    Email: $form.find('#Email').val(),
-                    PhoneNumber: $form.find('#PhoneNumber').val(),
-                    EmergencyContact: $form.find('#EmergencyContact').val(),
-                    Address: $form.find('#Address').val(),
-                    City: $form.find('#City').val(),
-                    State: $form.find('#State').val(),
-                    Country: $form.find('#Country').val(),
-                    PostalCode: $form.find('#PostalCode').val(),
-                    DepartmentID: parseInt($form.find('#DepartmentID').val() || 0),
-                    DesignationID: parseInt($form.find('#DesignationID').val() || 0),
-                    OfficeLocationID: parseInt($form.find('#OfficeLocationID').val() || 0),
-                    ManagerID: parseInt($form.find('#ManagerID').val() || 0) || null,
-                    JoiningDate: $form.find('#JoiningDate').val(),
-                    EmploymentType: $form.find('#EmploymentType').val(),
-                    BasicSalary: parseFloat($form.find('#BasicSalary').val() || 0),
-                    ShiftID: parseInt($form.find('#ShiftID').val() || 0) || null,
-                    IsActive: $form.find('#IsActive').is(':checked') ? true : false,
-                    Mode: (parseInt($form.find('input[name="EmployeeID"]').val() || 0) === 0) ? 1 : 2
-                };
-
-                $.ajax({
-                    url: '@Url.Action("Save", "Employee")',
-                    type: 'POST',
-                    data: data,
-                    headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
-                    success: function (res) {
-                        if (res && res.success) {
-                            var modalEl = document.getElementById('employeeModal');
-                            var modal = bootstrap.Modal.getInstance(modalEl);
-                            modal.hide();
-                            // refresh table rows via AJAX
-                            refreshList();
-                            showMessage(res.message, true);
-                        } else {
-                            // show error inside modal
-                            var err = res && res.message ? res.message : 'Save failed';
-                            $('#employeeModalBody').prepend('<div class="alert alert-danger">' + err + '</div>');
-                        }
-                    },
-                    error: function (err) { $('#employeeModalBody').prepend('<div class="alert alert-danger">Server error</div>'); }
-                });
-            });
-        });
-    </script>
-}
+        @if (isEmployee)
+        {
+            <div class="alert alert-info">This page shows your employee profile only.</div>
+        }
+        <div class="card">
+            <div class="card-body p-0">
+                <partial name="_EmployeeRows" model="Model.Employees" />
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,5 @@
-﻿@{
-    ViewData["Title"] = "Department";
+@{
+    ViewData["Title"] = "Designation";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <!--begin::App Content Header-->
@@ -9,13 +9,13 @@
         <!--begin::Row-->
         <div class="row">
             <div class="col-sm-6">
-                <h1 class="mb-0 fs-3">Department</h1>
+                <h1 class="mb-0 fs-3">Designation</h1>
             </div>
             <div class="col-sm-6">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Department</li>
+                        <li class="breadcrumb-item active" aria-current="page">Designation</li>
                     </ol>
                 </nav>
             </div>
@@ -33,26 +33,26 @@
             <div class="col-md-6">
                 <div class="card card-primary card-outline mb-4">
                     <div class="card-header">
-                        <div class="card-title">Quick Example</div>
+                        <div class="card-title">Add/Edit Designation</div>
                     </div>
-    <form id="departmentForm">
-        @Html.AntiForgeryToken()
+                    <form id="designationForm">
+                        @Html.AntiForgeryToken()
                         <div class="card-body">
-                            <input type="hidden" id="DepartmentID" name="DepartmentID" value="0" />
+                            <input type="hidden" id="DesignationID" name="DesignationID" value="0" />
                             <div class="mb-3">
-                                <label for="exampleInputEmail1" class="form-label">Department Name</label>
+                                <label for="DesignationName" class="form-label">Designation Name</label>
                                 <input type="text"
                                        class="form-control"
-                                       id="DepartmentName"
-                                       name="DepartmentName" />
+                                       id="DesignationName"
+                                       name="DesignationName" />
 
                             </div>
                             <div class="mb-3">
-                                <label for="exampleInputPassword1" class="form-label">Department Code</label>
-                                <input type="text" class="form-control" id="DepartmentCode" name="DepartmentCode" />
+                                <label for="DesignationCode" class="form-label">Designation Code</label>
+                                <input type="text" class="form-control" id="DesignationCode" name="DesignationCode" />
                             </div>
                             <div class="mb-3">
-                                <label for="exampleInputPassword1" class="form-label">Description</label>
+                                <label for="Description" class="form-label">Description</label>
                                 <input type="text" class="form-control" id="Description" name="Description" />
                             </div>
 
@@ -64,26 +64,26 @@
                 </div>
             </div>
 
-             
+
             <!-- Checks & Radios -->
             <div class="col-md-6">
                 <div class="card card-info card-outline mb-4">
                     <div class="card-header">
-                        <h3 class="card-title">Department List</h3>
-                         
+                        <h3 class="card-title">Designation List</h3>
+
                     </div>
 
-                
-                    <div class="card-body p-0" id="departmentList">
-                      
+
+                    <div class="card-body p-0" id="designationList">
+
                     </div>
 
 
                 </div>
             </div>
 
-              
-        
+
+
         </div>
     </div>
 </div>
@@ -91,61 +91,41 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
- 
+
 <script>
 
      $(document).ready(function() {
-      LoadDepartmentList()
+      LoadDesignationList()
     });
 
-    function LoadDepartmentList() {
+    function LoadDesignationList() {
         $.ajax({
-            url: '@Url.Action("GetDepartment", "Home")',
+            url: '@Url.Action("GetDesignation", "Home")',
             type: 'GET',
             success: function (response) {
-                $("#departmentList").html(response);
+                $("#designationList").html(response);
             },
             error: function (xhr, status, error) {
                 console.log(xhr.responseText);
-                alert("Failed to load department list.");
+                alert("Failed to load designation list.");
             }
         });
     }
 
-    function DeleteDepartment(id) {
-        if (!confirm('Delete department?')) return;
-        var token = $('input[name="__RequestVerificationToken"]').first().val();
-        $.ajax({
-            url: '@Url.Action("DeleteDepartment", "Home")',
-            type: 'POST',
-            data: { id: id },
-            headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
-            success: function (res) {
-                if (res && res.success) {
-                    alert(res.message);
-                    LoadDepartmentList();
-                } else {
-                    alert(res && res.message ? res.message : 'Delete failed');
-                }
-            },
-            error: function (err) { console.log(err); alert('Server error'); }
-        });
-    }
-
-    function EditDepartment(id) {
+    function EditDesignation(id) {
         var model={
-        DepartmentID:id
+        DesignationID:id
         };
 
         $.ajax({
-            url: '@Url.Action("GetDepartmentById", "Home")',
+            url: '@Url.Action("GetDesignationById", "Home")',
             type: 'GET',
             data:model,
             success: function (response) {
               // populate all editable fields (response is camel-cased JSON from ASP.NET Core)
-              $("#DepartmentID").val(response.departmentID || 0);
-              $("#DepartmentName").val(response.departmentName || '');
-              $("#DepartmentCode").val(response.departmentCode || '');
+              $("#DesignationID").val(response.designationID || 0);
+              $("#DesignationName").val(response.designationName || '');
+              $("#DesignationCode").val(response.designationCode || '');
               $("#Description").val(response.description || '');
               // scroll to form (optional)
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -154,31 +134,51 @@
             },
             error: function (xhr, status, error) {
                 console.log(xhr.responseText);
-                alert("Failed to load department list.");
+                alert("Failed to load designation.");
             }
+        });
+    }
+
+    function DeleteDesignation(id) {
+        if (!confirm('Delete designation?')) return;
+        var token = $('input[name="__RequestVerificationToken"]').first().val();
+        $.ajax({
+            url: '@Url.Action("DeleteDesignation", "Home")',
+            type: 'POST',
+            data: { id: id },
+            headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
+            success: function (res) {
+                if (res && res.success) {
+                    alert(res.message);
+                    LoadDesignationList();
+                } else {
+                    alert(res && res.message ? res.message : 'Delete failed');
+                }
+            },
+            error: function (err) { console.log(err); alert('Server error'); }
         });
     }
 
 
 
 
-     
+
     $("#btnSubmit").click(function (e) {
         e.preventDefault();
 
         var token = $('input[name="__RequestVerificationToken"]').val();
 
-        var departmentData = {
-            DepartmentID: parseInt($("#DepartmentID").val() || 0),
-            DepartmentName: $("#DepartmentName").val(),
-            DepartmentCode: $("#DepartmentCode").val(),
+        var designationData = {
+            DesignationID: parseInt($("#DesignationID").val() || 0),
+            DesignationName: $("#DesignationName").val(),
+            DesignationCode: $("#DesignationCode").val(),
             Description: $("#Description").val()
         };
 
         $.ajax({
-            url: '@Url.Action("Department", "Home")',
+            url: '@Url.Action("Designation", "Home")',
             type: 'POST',
-            data: departmentData,
+            data: designationData,
             headers: {
                 'RequestVerificationToken': token,
                 'X-Requested-With': 'XMLHttpRequest'
@@ -186,10 +186,10 @@
             success: function (response) {
                 if (response && response.success) {
                     alert(response.message);
-                    $("#departmentForm")[0].reset();
-                    $("#DepartmentID").val(0);
+                    $("#designationForm")[0].reset();
+                    $("#DesignationID").val(0);
                     // refresh the list
-                    LoadDepartmentList();
+                    LoadDesignationList();
                     // reset button text to Submit after save
                     $("#btnSubmit").text('Submit');
                 } else {
@@ -205,4 +205,3 @@
     });
 </script>
 
-                                    

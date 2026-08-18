@@ -1,0 +1,44 @@
+@model List<AdminPannel.Models.RoleResponse>
+
+@if(Model == null || !Model.Any())
+{
+<div class="alert alert-info">No roles found.</div>
+}
+else
+{
+<div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th style="width: 5%">#</th>
+                <th style="width: 30%">Role Name</th>
+                <th style="width: 50%">Description</th>
+                <th style="width: 15%">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var item in Model)
+            {
+                <tr class="align-middle">
+                    <td>@(Model.IndexOf(item) + 1)</td>
+                    <td><strong>@item.RoleName</strong></td>
+                    <td>@item.Description</td>
+                    <td>
+                        @if (User.IsInRole("Admin"))
+                        {
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="EditRole(@item.RoleID)" title="Edit">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="DeleteRole(@item.RoleID)" title="Delete">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+}
