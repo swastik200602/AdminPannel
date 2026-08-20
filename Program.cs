@@ -36,6 +36,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy(AuthorizationPolicies.EmployeeAccess,
         policy => policy.RequireRole("Admin", "Employee"));
+
+    options.AddPolicy(AuthorizationPolicies.UserManagement,
+        policy => policy.RequireRole("Admin", "HR"));
 });
 
 var app = builder.Build();

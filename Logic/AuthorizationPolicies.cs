@@ -6,5 +6,6 @@ namespace AdminPannel.Logic
         public const string HrAccess = "HrAccess";
         public const string ManagerAccess = "ManagerAccess";
         public const string EmployeeAccess = "EmployeeAccess";
+        public const string UserManagement = "UserManagement";
     }
 }

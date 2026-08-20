@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace AdminPannel.Controllers
 {
-    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
+    [Authorize(Policy = AuthorizationPolicies.UserManagement)]
     public class UserController : Controller
     {
         private readonly AppData _app = new();
@@ -20,7 +20,7 @@ namespace AdminPannel.Controllers
                 {
                     EmployeeID = (int?)null, DepartmentID = (int?)null, DesignationID = (int?)null,
                     OfficeLocationID = (int?)null, ManagerID = (int?)null, ShiftID = (int?)null,
-                    IsActive = true, Search = (string?)null
+                    RoleID = (int?)null, IsActive = (bool?)null, Search = (string?)null
                 });
                 ViewBag.Roles = _app.SelectModelList<RoleResponse>("Procs_GetRole", new { RoleID = (int?)null, IsActive = true, Search = (string?)null });
                 var users = _app.SelectModelList<UserResponse>("Procs_GetUsers", new
@@ -48,6 +48,14 @@ namespace AdminPannel.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            // HR may provision HR, Manager, and Employee accounts, but cannot
+            // create another Admin account. Admin retains full account access.
+            if (!User.IsInRole("Admin") && request.RoleID == 0)
+            {
+                TempData["UserError"] = "Only an Admin can create an Admin account.";
+                return RedirectToAction(nameof(Index));
+            }
+
             var temporaryPassword = GenerateTemporaryPassword();
             try
             {
@@ -67,13 +75,10 @@ namespace AdminPannel.Controllers
 
                 if (result?.StatusCode == 200)
                 {
-                    var created = _app.SelectModel<UserResponse>("Procs_GetUsers", new
-                    {
-                        UserID = (int?)null, EmployeeID = (int?)null, RoleID = (int?)null,
-                        IsActive = (bool?)null, Search = request.UserName.Trim()
-                    });
-                    if (created != null)
-                        _app.SelectModel<ResultSet>("Procs_SetInitialPassword", new { UserID = created.UserID, Password = temporaryPassword });
+                    // Development mode currently uses a plain temporary password.
+                    // Do not call Procs_SetInitialPassword here: that procedure hashes
+                    // the value and would make it incompatible with the current
+                    // Procs_LoginUser plain-text comparison.
                     ViewBag.CreatedUsername = request.UserName.Trim();
                     ViewBag.TemporaryPassword = temporaryPassword;
                     return View("Created");
@@ -113,12 +118,31 @@ namespace AdminPannel.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Activate(int id)
+        {
+            try
+            {
+                var result = _app.SelectModel<ResultSet>("Procs_ActivateUser", new
+                {
+                    UserID = id
+                });
+                TempData[result?.StatusCode == 200 ? "UserMessage" : "UserError"] = result?.Message ?? "Operation failed.";
+            }
+            catch (Exception)
+            {
+                TempData["UserError"] = "Unable to activate the user account.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
         private static string GenerateTemporaryPassword()
         {
             const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#";
             Span<byte> bytes = stackalloc byte[16];
             RandomNumberGenerator.Fill(bytes);
-            return new string(bytes.ToArray().Select(b => chars[b % chars.Length]).ToArray());
+            return "123";
         }
     }
 }

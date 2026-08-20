@@ -29,7 +29,7 @@ namespace AdminPannel.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult Department()
         {
             return View();
@@ -37,7 +37,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult Department(DepartmentRequest request)
         {
             try
@@ -87,7 +87,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetDepartment()
         {
             var param = new
@@ -100,7 +100,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetDepartmentById(int DepartmentID)
         {
             var param = new
@@ -114,7 +114,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult DeleteDepartment(int id)
         {
             try
@@ -145,7 +145,7 @@ namespace AdminPannel.Controllers
 
         // Designation endpoints (following Department pattern)
 
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult Designation()
         {
             return View();
@@ -153,7 +153,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult Designation(DesignationRequest request)
         {
             try
@@ -203,7 +203,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetDesignation()
         {
             var param = new
@@ -217,7 +217,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetDesignationById(int DesignationID)
         {
             var param = new
@@ -232,7 +232,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult DeleteDesignation(int id)
         {
             try
@@ -263,7 +263,7 @@ namespace AdminPannel.Controllers
 
         // Office Branch endpoints (following Department and Designation pattern)
 
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult OfficeBranch()
         {
             return View();
@@ -271,7 +271,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult OfficeBranch(OfficeBranchRequest request)
         {
             try
@@ -323,7 +323,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetOfficeBranch()
         {
             var param = new
@@ -337,7 +337,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetOfficeBranchById(int OfficeLocationID)
         {
             var param = new
@@ -352,7 +352,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult DeleteOfficeBranch(int id)
         {
             try
@@ -507,7 +507,7 @@ namespace AdminPannel.Controllers
 
         // Shift endpoints (following Department, Designation, Office Branch and Role pattern)
 
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult Shift()
         {
             return View();
@@ -515,7 +515,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult Shift(ShiftRequest request)
         {
             try
@@ -565,7 +565,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetShift()
         {
             var param = new
@@ -579,7 +579,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetShiftById(int ShiftID)
         {
             var param = new
@@ -594,7 +594,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult DeleteShift(int id)
         {
             try
@@ -628,7 +628,7 @@ namespace AdminPannel.Controllers
 
         // Leave Type endpoints (following Department, Designation, Office Branch, Role and Shift pattern)
 
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult LeaveType()
         {
             return View();
@@ -636,7 +636,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult LeaveType(LeaveTypeRequest request)
         {
             try
@@ -686,7 +686,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetLeaveType()
         {
             var param = new
@@ -700,7 +700,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetLeaveTypeById(int LeaveTypeID)
         {
             var param = new
@@ -715,7 +715,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult DeleteLeaveType(int id)
         {
             try
@@ -747,7 +747,7 @@ namespace AdminPannel.Controllers
 
         // Holiday endpoints (following Department, Designation, Office Branch, Role, Shift and Leave Type pattern)
 
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult Holiday()
         {
             return View();
@@ -755,7 +755,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult Holiday(HolidayRequest request)
         {
             try
@@ -805,7 +805,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetHoliday()
         {
             var param = new
@@ -819,7 +819,7 @@ namespace AdminPannel.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult GetHolidayById(int HolidayID)
         {
             var param = new
@@ -834,7 +834,7 @@ namespace AdminPannel.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = AuthorizationPolicies.HrAccess)]
+        [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
         public IActionResult DeleteHoliday(int id)
         {
             try

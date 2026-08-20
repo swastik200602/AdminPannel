@@ -2,29 +2,110 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "User Accounts";
-    var employees = ViewBag.Employees as IEnumerable<AdminPannel.Models.EmployeeResponse> ?? Enumerable.Empty<AdminPannel.Models.EmployeeResponse>();
-    var roles = ViewBag.Roles as IEnumerable<AdminPannel.Models.RoleResponse> ?? Enumerable.Empty<AdminPannel.Models.RoleResponse>();
+    var employees = ViewBag.Employees as IEnumerable<AdminPannel.Models.EmployeeResponse> ??
+Enumerable.Empty<AdminPannel.Models.EmployeeResponse>();
+    var roles = ViewBag.Roles as IEnumerable<AdminPannel.Models.RoleResponse> ??
+Enumerable.Empty<AdminPannel.Models.RoleResponse>();
 }
-<div class="app-content-header"><div class="container-fluid"><h1 class="fs-3">User Accounts</h1></div></div>
-<div class="app-content"><div class="container-fluid">
-    @if (TempData["UserError"] != null) { <div class="alert alert-danger">@TempData["UserError"]</div> }
-    @if (TempData["UserMessage"] != null) { <div class="alert alert-success">@TempData["UserMessage"]</div> }
-    @if (TempData["TemporaryPassword"] != null)
-    {
-        <div class="alert alert-warning"><strong>Temporary credentials (show once):</strong><br />Username: <code>@TempData["CreatedUsername"]</code><br />Password: <code>@TempData["TemporaryPassword"]</code><br /><small>Deliver this securely and require a password change as soon as password-change support is enabled.</small></div>
-    }
-    @if (ViewBag.Error != null) { <div class="alert alert-danger">@ViewBag.Error</div> }
-    <div class="card mb-3"><div class="card-header"><h2 class="h5 mb-0">Create account</h2></div><div class="card-body">
-        <form asp-action="Create" method="post" class="row g-2">@Html.AntiForgeryToken()
-            <div class="col-md-3"><label class="form-label">Employee</label><select name="EmployeeID" class="form-select" required><option value="">Select employee</option>@foreach (var e in employees) { <option value="@e.EmployeeID">@e.FullName (@e.EmployeeCode)</option> }</select></div>
-            <div class="col-md-2"><label class="form-label">Role</label><select name="RoleID" class="form-select" required><option value="">Select role</option>@foreach (var r in roles) { <option value="@r.RoleID">@r.RoleName</option> }</select></div>
-            <div class="col-md-2"><label class="form-label">Username</label><input name="UserName" class="form-control" required /></div>
-            <div class="col-md-2"><label class="form-label">Email</label><input name="Email" type="email" class="form-control" /></div>
-            <div class="col-md-2"><label class="form-label">Mobile</label><input name="MobileNo" class="form-control" /></div>
-            <div class="col-md-1 d-flex align-items-end"><button class="btn btn-primary" type="submit">Create</button></div>
-        </form>
-    </div></div>
-    <div class="card"><div class="card-body table-responsive"><table class="table table-striped"><thead><tr><th>Employee</th><th>Username</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead><tbody>
-    @foreach (var user in Model) { <tr><td>@user.FullName (@user.EmployeeCode)</td><td>@user.UserName</td><td>@user.RoleName</td><td>@(user.IsActive ? "Active" : "Inactive")</td><td>@user.LastLogin?.ToString("yyyy-MM-dd HH:mm")</td><td>@if (user.IsActive) { <form asp-action="Delete" asp-route-id="@user.UserID" method="post" class="d-inline">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-danger" type="submit">Deactivate</button></form> }</td></tr> }
-    </tbody></table></div></div>
-</div></div>
+<div class="app-content-header">
+    <div class="container-fluid">
+        <h1 class="fs-3">User Accounts</h1>
+    </div>
+</div>
+<div class="app-content">
+    <div class="container-fluid">
+        @if (TempData["UserError"] != null)
+        {
+            <div class="alert alert-danger">@TempData["UserError"]</div>
+        }
+        @if (TempData["UserMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["UserMessage"]</div>
+        }
+        @if (TempData["TemporaryPassword"] != null)
+        {
+            <div class="alert alert-warning"><strong>Temporary credentials (show once):</strong><br />Username:
+                <code>@TempData["CreatedUsername"]</code><br />Password:
+                <code>@TempData["TemporaryPassword"]</code><br /><small>Deliver this securely and require a password change
+                as soon as password-change support is enabled.</small></div>
+            }
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Create account</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" class="row g-2">@Html.AntiForgeryToken()
+                        <div class="col-md-3"><label class="form-label">Employee</label><select name="EmployeeID"
+                                                                                                class="form-select" required>
+                            <option value="">Select employee</option>@foreach (var e in employees) {
+                            <option
+                            value="@e.EmployeeID">@e.FullName (@e.EmployeeCode) - current role: @(string.IsNullOrWhiteSpace(e.RoleName) ? "Unassigned" : e.RoleName)</option>
+                        }
+                    </select></div>
+                    <div class="col-md-2"><label class="form-label">Role</label><select name="RoleID"
+                                                                                        class="form-select" required>
+                        <option value="">Select role</option>@foreach (var r in roles) {
+                        if (r.RoleID != 0 || User.IsInRole("Admin")) {
+                        <option value="@r.RoleID">
+                            @r.RoleName</option>
+                        }
+                        }
+                    </select></div>
+                    <div class="col-md-2"><label class="form-label">Username</label><input name="UserName"
+                                                                                               class="form-control" required /></div>
+                        <div class="col-md-2"><label class="form-label">Email</label><input name="Email" type="email"
+                                                                                                class="form-control" /></div>
+                            <div class="col-md-2"><label class="form-label">Mobile</label><input name="MobileNo"
+                                                                                                     class="form-control" /></div>
+                                <div class="col-md-1 d-flex align-items-end"><button class="btn btn-primary"
+                                                                                         type="submit">Create</button></div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Last login</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var user in Model)
+                                        {
+                                            <tr>
+                                                <td>@user.FullName (@user.EmployeeCode)</td>
+                                                <td>@user.UserName</td>
+                                                <td>@user.RoleName</td>
+                                                <td>@(user.IsActive ? "Active" : "Inactive")</td>
+                                                <td>@user.LastLogin?.ToString("yyyy-MM-dd HH:mm")</td>
+                                                <td>@if (user.IsActive) {
+                                                    <form asp-action="Delete" asp-route-id="@user.UserID"
+                                                          method="post" class="d-inline">@Html.AntiForgeryToken()<button
+                                                        class="btn btn-sm btn-outline-danger" type="submit">Deactivate</button></form>
+                                                    }
+                                else
+                                                    {
+
+                                                        <form asp-action="Activate" asp-route-id="@user.UserID" method="post"
+                                                              class="d-inline">@Html.AntiForgeryToken()<button
+                                                            class="btn btn-sm btn-outline-success" type="submit">Activate</button></form>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>

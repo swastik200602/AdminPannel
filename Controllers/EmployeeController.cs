@@ -80,7 +80,10 @@ namespace AdminPannel.Controllers
         [Authorize(Policy = AuthorizationPolicies.HrAccess)]
         public IActionResult Create(EmployeeRequest request)
         {
-            request.RoleID = User.IsInRole("Admin") ? request.RoleID : 3;
+            if (!User.IsInRole("Admin") && request.RoleID == 0)
+            {
+                ModelState.AddModelError(nameof(request.RoleID), "Only an Admin can assign the Admin role.");
+            }
             request.ProfileImage = null;
             if (!ValidateEmployeeRequest(request))
             {
