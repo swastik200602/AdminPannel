@@ -12,6 +12,12 @@
   var roleName = User.FindFirst("RoleName")?.Value ?? "User";
   var isAdmin = User.IsInRole("Admin");
   var canManageHrMaster = isAdmin;
+  var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+  var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+  var payrollOpen = string.Equals(currentController, "Payroll", StringComparison.OrdinalIgnoreCase);
+  var masterActions = new[] { "Department", "Designation", "OfficeBranch", "Role", "Shift", "LeaveType", "Holiday" };
+  var masterOpen = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase) && masterActions.Contains(currentAction, StringComparer.OrdinalIgnoreCase);
+  bool IsAction(params string[] actions) => actions.Contains(currentAction, StringComparer.OrdinalIgnoreCase);
 }
 
   <!--begin::Head-->
@@ -441,8 +447,8 @@
               
               @if (canManageHrMaster)
               {
-              <li class="nav-item">
-                <a href="#" class="nav-link">
+              <li class="nav-item @(masterOpen ? "menu-open" : "")">
+                <a href="#" class="nav-link @(masterOpen ? "active" : "")">
                   <i class="nav-icon bi bi-box-seam-fill"></i>
                   <p>
                     Master
@@ -450,47 +456,40 @@
                   </p>
                 </a>
                 <ul class="nav nav-treeview">
-                  <li class="nav-item">
-                    <a href="/Home/Department" class="nav-link">
+                  <li class="nav-item"><a href="/Home/Department" class="nav-link @(IsAction("Department") ? "active" : "")">
                       <i class="nav-icon bi bi-circle"></i>
                       <p>Department</p>
                     </a>
                   </li>
-                  <li class="nav-item">
-                   <a href="/Home/Designation" class="nav-link">
+                  <li class="nav-item"><a href="/Home/Designation" class="nav-link @(IsAction("Designation") ? "active" : "")">
                      <i class="nav-icon bi bi-circle"></i>
                      <p>Designation</p>
                    </a>
                   </li>
-                  <li class="nav-item">
-                   <a href="/Home/OfficeBranch" class="nav-link">
+                  <li class="nav-item"><a href="/Home/OfficeBranch" class="nav-link @(IsAction("OfficeBranch") ? "active" : "")">
                      <i class="nav-icon bi bi-circle"></i>
                      <p>Office Branch</p>
                    </a>
                   </li>
                   @if (isAdmin)
                   {
-                  <li class="nav-item">
-                    <a href="/Home/Role" class="nav-link">
+                  <li class="nav-item"><a href="/Home/Role" class="nav-link @(IsAction("Role") ? "active" : "")">
                       <i class="nav-icon bi bi-circle"></i>
                       <p>Role</p>
                     </a>
                   </li>
                   }
-                  <li class="nav-item">
-                   <a href="/Home/Shift" class="nav-link">
+                  <li class="nav-item"><a href="/Home/Shift" class="nav-link @(IsAction("Shift") ? "active" : "")">
                      <i class="nav-icon bi bi-circle"></i>
                      <p>Shift</p>
                    </a>
                   </li>
-                  <li class="nav-item">
-                   <a href="/Home/LeaveType" class="nav-link">
+                  <li class="nav-item"><a href="/Home/LeaveType" class="nav-link @(IsAction("LeaveType") ? "active" : "")">
                      <i class="nav-icon bi bi-circle"></i>
                      <p>Leave Type</p>
                    </a>
                   </li>
-                  <li class="nav-item">
-                   <a href="/Home/Holiday" class="nav-link">
+                  <li class="nav-item"><a href="/Home/Holiday" class="nav-link @(IsAction("Holiday") ? "active" : "")">
                      <i class="nav-icon bi bi-circle"></i>
                      <p>Holiday</p>
                    </a>
@@ -509,6 +508,37 @@
             {
                 <li class="nav-item">
                     <a asp-controller="User" asp-action="Index" class="nav-link"><i class="nav-icon bi bi-person-lock"></i><p>User Accounts</p></a>
+                </li>
+            }
+            @if (isAdmin || User.IsInRole("HR") || User.IsInRole("Manager") || User.IsInRole("Employee"))
+            {
+                <li class="nav-item @(payrollOpen ? "menu-open" : "")">
+                    <a href="#" class="nav-link @(payrollOpen ? "active" : "")">
+                        <i class="nav-icon bi bi-cash-stack"></i>
+                        <p>Payroll <i class="nav-arrow bi bi-chevron-right"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        @if (isAdmin || User.IsInRole("HR"))
+                        {
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="Summary" class="nav-link @(IsAction("Summary") ? "active" : "")"><i class="nav-icon bi bi-circle"></i><p>Dashboard</p></a></li>
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="Index" class="nav-link @(IsAction("Index", "Details", "Edit", "UpdatePaymentStatus", "Delete") ? "active" : "")"><i class="nav-icon bi bi-circle"></i><p>Payroll Management</p></a></li>
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="Generate" class="nav-link @(IsAction("Generate") ? "active" : "")"><i class="nav-icon bi bi-circle"></i><p>Generate Payroll</p></a></li>
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="History" class="nav-link @(IsAction("History") ? "active" : "")"><i class="nav-icon bi bi-circle"></i><p>Payroll History</p></a></li>
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="SalaryMaster" class="nav-link @(IsAction("SalaryMaster", "SalaryHistory", "CreateSalaryRevision") ? "active" : "")"><i class="nav-icon bi bi-circle"></i><p>Salary Master</p></a></li>
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="TaxMaster" class="nav-link @(IsAction("TaxMaster", "TaxHistory", "CreateTaxRevision") ? "active" : "")"><i class="nav-icon bi bi-circle"></i><p>Tax / TDS</p></a></li>
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="Bonus" class="nav-link @(IsAction("Bonus", "CreateBonus", "EditBonus", "CancelBonus") ? "active" : "")"><i class="nav-icon bi bi-circle"></i><p>Bonuses</p></a></li>
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="Advance" class="nav-link @(IsAction("Advance", "CreateAdvance", "EditAdvance", "CancelAdvance") ? "active" : "")"><i class="nav-icon bi bi-circle"></i><p>Advances / Loans</p></a></li>
+                        }
+                        @if (User.IsInRole("Manager"))
+                        {
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="Index" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Team Payroll</p></a></li>
+                        }
+                        @if (User.IsInRole("Employee"))
+                        {
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="History" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>My Payroll</p></a></li>
+                            <li class="nav-item"><a asp-controller="Payroll" asp-action="History" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>My Salary Slips</p></a></li>
+                        }
+                    </ul>
                 </li>
             }
             </ul>

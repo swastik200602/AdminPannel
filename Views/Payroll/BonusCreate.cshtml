@@ -1,0 +1,3 @@
+@model AdminPannel.Models.BonusRequestModel
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; var employees = ViewBag.Employees as IEnumerable<AdminPannel.Models.EmployeeResponse> ?? Enumerable.Empty<AdminPannel.Models.EmployeeResponse>(); }
+<div class="app-content-header"><div class="container-fluid"><h1 class="fs-3">Create Bonus</h1></div></div><div class="app-content"><div class="container-fluid"><div class="card"><div class="card-body"><div asp-validation-summary="All" class="text-danger"></div><form asp-action="CreateBonus" method="post">@Html.AntiForgeryToken()<partial name="_BonusFields" model="Model" /><button class="btn btn-primary" type="submit">Create</button> <a class="btn btn-outline-secondary" asp-action="Bonus">Cancel</a></form></div></div></div></div>

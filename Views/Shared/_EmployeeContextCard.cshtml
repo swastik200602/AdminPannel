@@ -1,0 +1,24 @@
+@model AdminPannel.Models.EmployeeContextModel
+<div class="employee-context-card d-flex align-items-center gap-3 mb-3 p-3 rounded border border-secondary-subtle">
+    @if (!string.IsNullOrWhiteSpace(Model.ProfileImage))
+    {
+        <img src="@Model.ProfileImage" alt="@Model.FullName" class="rounded-circle" style="width:64px;height:64px;object-fit:cover;" />
+    }
+    else
+    {
+        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+            <i class="bi bi-person fs-3"></i>
+        </div>
+    }
+    <div>
+        <div class="fs-5 fw-semibold">@(Model.FullName ?? "Employee")</div>
+        <div class="small text-body-secondary">@(Model.EmployeeCode ?? $"Employee #{Model.EmployeeID}")</div>
+        <div class="small">@(Model.DesignationName ?? "Designation unavailable") <span class="text-body-secondary">•</span> @(Model.DepartmentName ?? "Department unavailable")</div>
+        <div class="small text-body-secondary">@(Model.OfficeName ?? "Branch unavailable") <span class="mx-1">•</span> Joined: @(Model.JoiningDate?.ToString("dd-MMM-yyyy") ?? "-")
+            @if (Model.IsActive.HasValue)
+            {
+                <span class="badge ms-2 @(Model.IsActive.Value ? "bg-success" : "bg-secondary")">@(Model.IsActive.Value ? "Active" : "Inactive")</span>
+            }
+        </div>
+    </div>
+</div>

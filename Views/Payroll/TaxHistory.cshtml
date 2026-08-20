@@ -1,0 +1,7 @@
+@model IEnumerable<AdminPannel.Models.TaxMasterModel>
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; }
+<div class="app-content-header"><div class="container-fluid"><h1 class="fs-3">@(ViewBag.EmployeeContext?.FullName ?? "Employee") — Tax History</h1></div></div>
+<div class="app-content"><div class="container-fluid">
+    @if (ViewBag.EmployeeContext is AdminPannel.Models.EmployeeContextModel employeeContext) { @await Html.PartialAsync("_EmployeeContextCard", employeeContext) }
+    <div class="card"><div class="card-body table-responsive"><table class="table table-striped"><thead><tr><th>Type</th><th>Amount</th><th>Effective From</th><th>Effective To</th><th>Active</th><th>Reason</th><th>Created</th></tr></thead><tbody>@foreach (var t in Model) { <tr><td>@t.TaxType</td><td>@t.TaxAmount.ToString("N2")</td><td>@t.EffectiveFrom.ToString("yyyy-MM-dd")</td><td>@t.EffectiveTo?.ToString("yyyy-MM-dd")</td><td>@(t.IsActive ? "Active" : "Inactive")</td><td>@t.Reason</td><td>@t.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</td></tr> }</tbody></table><a class="btn btn-outline-secondary" asp-action="TaxMaster">Back</a></div></div>
+</div></div>

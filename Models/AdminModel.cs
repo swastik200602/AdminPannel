@@ -56,6 +56,7 @@
         public int DepartmentID { get; set; }
         public int DesignationID { get; set; }
         public int OfficeLocationID { get; set; }
+        public string? OfficeName { get; set; }
         public int? ManagerID { get; set; }
         public DateTime? JoiningDate { get; set; }
         public string? EmploymentType { get; set; }
@@ -117,6 +118,233 @@
         public string? ConfirmPassword { get; set; }
     }
 
+    public class PayrollFilterModel
+    {
+        public int? EmployeeID { get; set; }
+        public byte? PayrollMonth { get; set; }
+        public short? PayrollYear { get; set; }
+        public string? PaymentStatus { get; set; }
+    }
+
+    public class PayrollHistoryFilterModel
+    {
+        public int? EmployeeID { get; set; }
+        public byte? FromMonth { get; set; }
+        public short? FromYear { get; set; }
+        public byte? ToMonth { get; set; }
+        public short? ToYear { get; set; }
+        public string? PaymentStatus { get; set; }
+    }
+
+    public class PayrollModel
+    {
+        public int PayrollID { get; set; }
+        public int EmployeeID { get; set; }
+        public string? EmployeeCode { get; set; }
+        public string? EmployeeName { get; set; }
+        public byte PayrollMonth { get; set; }
+        public short PayrollYear { get; set; }
+        public decimal BasicSalary { get; set; }
+        public decimal Allowance { get; set; }
+        public decimal Bonus { get; set; }
+        public decimal Deduction { get; set; }
+        public decimal Tax { get; set; }
+        public decimal AdvanceRecovery { get; set; }
+        public decimal NetSalary { get; set; }
+        public DateTime? PaymentDate { get; set; }
+        public string? PaymentStatus { get; set; }
+        public string? Remarks { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public int StatusCode { get; set; }
+        public string? Message { get; set; }
+    }
+
+    public class PayrollGenerateRequest
+    {
+        public int EmployeeID { get; set; }
+        public byte PayrollMonth { get; set; }
+        public short PayrollYear { get; set; }
+        public string PaymentStatus { get; set; } = "Pending";
+        public string? Remarks { get; set; }
+    }
+
+    public class PayrollPaymentStatusRequest
+    {
+        public int PayrollID { get; set; }
+        public string PaymentStatus { get; set; } = "Pending";
+        public DateTime? PaymentDate { get; set; }
+        public string? Remarks { get; set; }
+    }
+
+    public class PayrollSummaryModel
+    {
+        public int TotalPayrollRecords { get; set; }
+        public int PaidCount { get; set; }
+        public int PendingCount { get; set; }
+        public int ProcessingCount { get; set; }
+        public int FailedCount { get; set; }
+        public decimal TotalBasicSalary { get; set; }
+        public decimal TotalAllowance { get; set; }
+        public decimal TotalBonus { get; set; }
+        public decimal TotalDeduction { get; set; }
+        public decimal TotalTax { get; set; }
+        public decimal TotalAdvanceRecovery { get; set; }
+        public decimal TotalNetSalary { get; set; }
+    }
+
+    public class SalarySlipModel : PayrollModel
+    {
+        public string? DepartmentName { get; set; }
+        public string? DesignationName { get; set; }
+        public decimal GrossEarnings { get; set; }
+        public decimal TotalDeductions { get; set; }
+    }
+
+    public class SalaryMasterFilterModel
+    {
+        public int? EmployeeID { get; set; }
+        public bool? IsActive { get; set; } = true;
+    }
+
+    public class SalaryMasterModel
+    {
+        public int SalaryMasterID { get; set; }
+        public int EmployeeID { get; set; }
+        public string? EmployeeCode { get; set; }
+        public string? EmployeeName { get; set; }
+        public decimal BasicSalary { get; set; }
+        public decimal Allowance { get; set; }
+        public decimal Bonus { get; set; }
+        public decimal Deduction { get; set; }
+        public decimal Tax { get; set; }
+        public DateTime EffectiveFrom { get; set; }
+        public DateTime? EffectiveTo { get; set; }
+        public bool IsActive { get; set; }
+        public string? RevisionReason { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public int StatusCode { get; set; }
+        public string? Message { get; set; }
+    }
+
+    public class SalaryRevisionModel
+    {
+        public int EmployeeID { get; set; }
+        public decimal BasicSalary { get; set; }
+        public decimal Allowance { get; set; }
+        public decimal Bonus { get; set; }
+        public decimal Deduction { get; set; }
+        public decimal Tax { get; set; }
+        public DateTime EffectiveFrom { get; set; } = DateTime.Today;
+        public string? RevisionReason { get; set; }
+    }
+
+    public class TaxMasterFilterModel
+    {
+        public int? EmployeeID { get; set; }
+        public string? TaxType { get; set; }
+        public bool? IsActive { get; set; } = true;
+    }
+
+    public class TaxMasterModel
+    {
+        public int TaxMasterID { get; set; }
+        public int EmployeeID { get; set; }
+        public string? EmployeeCode { get; set; }
+        public string? EmployeeName { get; set; }
+        public string? TaxType { get; set; }
+        public decimal TaxAmount { get; set; }
+        public DateTime EffectiveFrom { get; set; }
+        public DateTime? EffectiveTo { get; set; }
+        public bool IsActive { get; set; }
+        public string? Reason { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public int StatusCode { get; set; }
+        public string? Message { get; set; }
+    }
+
+    public class TaxRevisionModel
+    {
+        public int EmployeeID { get; set; }
+        public string TaxType { get; set; } = "TDS";
+        public decimal TaxAmount { get; set; }
+        public DateTime EffectiveFrom { get; set; } = DateTime.Today;
+        public string? Reason { get; set; }
+    }
+
+    public class BonusFilterModel
+    {
+        public int? EmployeeID { get; set; }
+        public byte? BonusMonth { get; set; }
+        public short? BonusYear { get; set; }
+        public string? Status { get; set; }
+    }
+
+    public class BonusModel
+    {
+        public int BonusID { get; set; }
+        public int EmployeeID { get; set; }
+        public string? EmployeeCode { get; set; }
+        public string? EmployeeName { get; set; }
+        public decimal BonusAmount { get; set; }
+        public byte BonusMonth { get; set; }
+        public short BonusYear { get; set; }
+        public string? BonusType { get; set; }
+        public string? Reason { get; set; }
+        public string? Status { get; set; }
+        public DateTime? PaidDate { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public int StatusCode { get; set; }
+        public string? Message { get; set; }
+    }
+
+    public class BonusRequestModel
+    {
+        public int EmployeeID { get; set; }
+        public decimal BonusAmount { get; set; }
+        public byte BonusMonth { get; set; }
+        public short BonusYear { get; set; }
+        public string? BonusType { get; set; }
+        public string? Reason { get; set; }
+    }
+
+    public class SalaryAdvanceFilterModel
+    {
+        public int? EmployeeID { get; set; }
+        public string? TransactionType { get; set; }
+        public string? Status { get; set; }
+    }
+
+    public class SalaryAdvanceModel
+    {
+        public int SalaryAdvanceID { get; set; }
+        public int EmployeeID { get; set; }
+        public string? EmployeeCode { get; set; }
+        public string? EmployeeName { get; set; }
+        public string? TransactionType { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal RecoveredAmount { get; set; }
+        public decimal OutstandingAmount { get; set; }
+        public decimal MonthlyRecoveryAmount { get; set; }
+        public DateTime IssueDate { get; set; }
+        public byte RecoveryStartMonth { get; set; }
+        public short RecoveryStartYear { get; set; }
+        public string? Status { get; set; }
+        public string? Remarks { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
+
+    public class SalaryAdvanceRequestModel
+    {
+        public int EmployeeID { get; set; }
+        public string TransactionType { get; set; } = "Advance";
+        public decimal TotalAmount { get; set; }
+        public decimal MonthlyRecoveryAmount { get; set; }
+        public DateTime IssueDate { get; set; } = DateTime.Today;
+        public byte RecoveryStartMonth { get; set; } = (byte)DateTime.Today.Month;
+        public short RecoveryStartYear { get; set; } = (short)DateTime.Today.Year;
+        public string? Remarks { get; set; }
+    }
+
     public class EmployeeResponse
     {
         public int StatusCode { get; set; }
@@ -141,6 +369,7 @@
         public int DesignationID { get; set; }
         public string? DesignationName { get; set; }
         public int OfficeLocationID { get; set; }
+        public string? OfficeName { get; set; }
         public int? ManagerID { get; set; }
         public string? ManagerEmployeeCode { get; set; }
         public string? ManagerName { get; set; }
@@ -154,6 +383,19 @@
         public bool IsActive { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+    }
+
+    public class EmployeeContextModel
+    {
+        public int EmployeeID { get; set; }
+        public string? FullName { get; set; }
+        public string? EmployeeCode { get; set; }
+        public string? ProfileImage { get; set; }
+        public string? DesignationName { get; set; }
+        public string? DepartmentName { get; set; }
+        public string? OfficeName { get; set; }
+        public DateTime? JoiningDate { get; set; }
+        public bool? IsActive { get; set; }
     }
 
 

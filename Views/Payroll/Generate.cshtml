@@ -1,0 +1,27 @@
+@model AdminPannel.Models.PayrollGenerateRequest
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; var employees = ViewBag.Employees as IEnumerable<AdminPannel.Models.EmployeeResponse> ?? Enumerable.Empty<AdminPannel.Models.EmployeeResponse>(); var selected = employees.FirstOrDefault(e => e.EmployeeID == Model.EmployeeID); }
+<div class="app-content-header"><div class="container-fluid"><h1 class="fs-3">Generate Payroll</h1><p class="text-body-secondary mb-0">Create a payroll record from the employee's current salary and approved transactions.</p></div></div>
+<div class="app-content"><div class="container-fluid"><div class="card"><div class="card-body">
+ <div asp-validation-summary="All" class="text-danger"></div>
+ <div id="employeeContext" class="@(selected == null ? "d-none" : "")">@if (selected != null) { @await Html.PartialAsync("_EmployeeContextCard", new AdminPannel.Models.EmployeeContextModel { EmployeeID = selected.EmployeeID, FullName = selected.FullName, EmployeeCode = selected.EmployeeCode, ProfileImage = selected.ProfileImage, DesignationName = selected.DesignationName, DepartmentName = selected.DepartmentName, JoiningDate = selected.JoiningDate, IsActive = selected.IsActive }) }</div>
+ <form asp-action="Generate" method="post">@Html.AntiForgeryToken()
+  <div class="mb-3"><label asp-for="EmployeeID" class="form-label">Employee</label><select asp-for="EmployeeID" class="form-select" id="employeeSelect"><option value="0">Select employee</option>@foreach (var e in employees) { <option value="@e.EmployeeID" data-name="@e.FullName" data-code="@e.EmployeeCode" data-designation="@e.DesignationName" data-department="@e.DepartmentName" data-image="@e.ProfileImage">@e.FullName (@e.EmployeeCode)</option> }</select></div>
+  <div class="row"><div class="col-md-6"><label asp-for="PayrollMonth" class="form-label">Month</label><input asp-for="PayrollMonth" class="form-control" min="1" max="12" /></div><div class="col-md-6"><label asp-for="PayrollYear" class="form-label">Year</label><input asp-for="PayrollYear" class="form-control" min="2000" /></div></div>
+  <div class="mb-3 mt-3"><label asp-for="PaymentStatus" class="form-label">Payment status</label><select asp-for="PaymentStatus" class="form-select"><option>Pending</option><option>Processing</option></select></div>
+  <div class="mb-3"><label asp-for="Remarks" class="form-label">Remarks</label><textarea asp-for="Remarks" class="form-control"></textarea></div>
+  <button class="btn btn-primary" type="submit">Generate payroll</button> <a class="btn btn-outline-secondary" asp-action="Index">Back</a>
+ </form></div></div></div></div>
+<script>
+(() => {
+  const select = document.getElementById('employeeSelect');
+  const host = document.getElementById('employeeContext');
+  if (!select || !host) return;
+  select.addEventListener('change', () => {
+    const option = select.options[select.selectedIndex];
+    if (!option || option.value === '0') { host.classList.add('d-none'); host.innerHTML = ''; return; }
+    host.classList.remove('d-none');
+    const image = option.dataset.image ? `<img src="${option.dataset.image}" alt="${option.dataset.name}" class="rounded-circle" style="width:64px;height:64px;object-fit:cover;">` : '<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width:64px;height:64px;"><i class="bi bi-person fs-3"></i></div>';
+    host.innerHTML = `<div class="employee-context-card d-flex align-items-center gap-3 mb-3 p-3 rounded border border-secondary-subtle">${image}<div><div class="fs-5 fw-semibold">${option.dataset.name || 'Employee'}</div><div class="small text-body-secondary">${option.dataset.code || ''}</div><div class="small">${option.dataset.designation || 'Designation unavailable'} • ${option.dataset.department || 'Department unavailable'}</div></div></div>`;
+  });
+})();
+</script>

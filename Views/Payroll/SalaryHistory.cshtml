@@ -1,0 +1,7 @@
+@model IEnumerable<AdminPannel.Models.SalaryMasterModel>
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; }
+<div class="app-content-header"><div class="container-fluid"><h1 class="fs-3">@(ViewBag.EmployeeContext?.FullName ?? "Employee") — Salary History</h1></div></div>
+<div class="app-content"><div class="container-fluid">
+    @if (ViewBag.EmployeeContext is AdminPannel.Models.EmployeeContextModel employeeContext) { @await Html.PartialAsync("_EmployeeContextCard", employeeContext) }
+    <div class="card"><div class="card-body table-responsive"><table class="table table-striped"><thead><tr><th>Effective From</th><th>Effective To</th><th>Basic</th><th>Allowance</th><th>Bonus</th><th>Deduction</th><th>Tax</th><th>Active</th><th>Reason</th></tr></thead><tbody>@foreach (var s in Model) { <tr><td>@s.EffectiveFrom.ToString("yyyy-MM-dd")</td><td>@s.EffectiveTo?.ToString("yyyy-MM-dd")</td><td>@s.BasicSalary.ToString("N2")</td><td>@s.Allowance.ToString("N2")</td><td>@s.Bonus.ToString("N2")</td><td>@s.Deduction.ToString("N2")</td><td>@s.Tax.ToString("N2")</td><td>@(s.IsActive ? "Active" : "Inactive")</td><td>@s.RevisionReason</td></tr> }</tbody></table><a class="btn btn-outline-secondary" asp-action="SalaryMaster">Back</a></div></div>
+</div></div>

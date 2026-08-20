@@ -1,0 +1,3 @@
+@model AdminPannel.Models.SalaryAdvanceRequestModel
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; }
+<div class="app-content-header"><div class="container-fluid"><h1 class="fs-3">Edit Active Advance / Loan</h1></div></div><div class="app-content"><div class="container-fluid"><div class="card"><div class="card-body"><div asp-validation-summary="All" class="text-danger"></div><form asp-action="EditAdvance" asp-route-id="@ViewBag.AdvanceID" method="post">@Html.AntiForgeryToken()<partial name="_AdvanceFields" model="Model" /><button class="btn btn-primary">Save</button> <a class="btn btn-outline-secondary" asp-action="Advance">Cancel</a></form></div></div></div></div>
