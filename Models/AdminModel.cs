@@ -27,6 +27,8 @@
     public class EmployeePageModel
     {
         public List<EmployeeResponse> Employees { get; set; } = new();
+        public int TotalEmployees { get; set; }
+        public int ActiveEmployees { get; set; }
         public EmployeeFilterRequest Filter { get; set; } = new();
         public List<DepartmentResponse> Departments { get; set; } = new();
         public List<DesignationResponse> Designations { get; set; } = new();
@@ -101,6 +103,10 @@
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? FullName { get; set; }
+        public string? ProfileImage { get; set; }
+        public string? DepartmentName { get; set; }
+        public string? DesignationName { get; set; }
+        public string? OfficeName { get; set; }
         public string? UserName { get; set; }
         public string? UserEmail { get; set; }
         public string? MobileNo { get; set; }
@@ -380,6 +386,9 @@
         public int RoleID { get; set; }
         public string? RoleName { get; set; }
         public string? ProfileImage { get; set; }
+        public string OnboardingStatus { get; set; } = "Not started";
+        public int OnboardingCompleted { get; set; }
+        public int OnboardingTotal { get; set; } = 4;
         public bool IsActive { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
@@ -396,6 +405,63 @@
         public string? OfficeName { get; set; }
         public DateTime? JoiningDate { get; set; }
         public bool? IsActive { get; set; }
+    }
+
+    public class LocationLookup
+    {
+        public int StateID { get; set; }
+        public int CityID { get; set; }
+        public string? StateName { get; set; }
+        public string? CityName { get; set; }
+    }
+
+    public class EmployeeCodeResult
+    {
+        public string? EmployeeCode { get; set; }
+    }
+
+    public class OnboardingStepModel
+    {
+        public string Key { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Status { get; set; } = "Missing";
+        public string ActionText { get; set; } = string.Empty;
+        public string? ActionController { get; set; }
+        public string? ActionName { get; set; }
+        public bool IsComplete => Status == "Complete";
+        public bool IsOptional => Status == "Optional";
+    }
+
+    public class EmployeeOnboardingModel
+    {
+        public EmployeeResponse Employee { get; set; } = new();
+        public List<OnboardingStepModel> Steps { get; set; } = new();
+        public List<EmployeeDocumentModel> Documents { get; set; } = new();
+        public int CompletedCount => Steps.Count(x => x.IsComplete);
+        public int RequiredCount => Steps.Count(x => !x.IsOptional && x.Key != "review");
+        public bool ReadyForPayroll => Steps.Where(x => !x.IsOptional && x.Key != "review").All(x => x.IsComplete);
+    }
+
+    public class EmployeeDocumentModel
+    {
+        public int DocumentID { get; set; }
+        public int EmployeeID { get; set; }
+        public string DocumentType { get; set; } = string.Empty;
+        public string DocumentName { get; set; } = string.Empty;
+        public string FilePath { get; set; } = string.Empty;
+        public string FileExtension { get; set; } = string.Empty;
+        public decimal? FileSizeKB { get; set; }
+        public DateTime UploadedDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public bool IsVerified { get; set; }
+        public string? Remarks { get; set; }
+    }
+
+    public class EmployeeDocumentsPageModel
+    {
+        public EmployeeResponse Employee { get; set; } = new();
+        public List<EmployeeDocumentModel> Documents { get; set; } = new();
     }
 
 
@@ -677,5 +743,74 @@
         public int? ManagerID { get; set; }
         public int? ShiftID { get; set; }
         public bool MustChangePassword { get; set; }
+    }
+
+    public class AttendanceModel
+    {
+        public int AttendanceID { get; set; }
+        public int EmployeeID { get; set; }
+        public string? EmployeeCode { get; set; }
+        public string? FullName { get; set; }
+        public DateTime AttendanceDate { get; set; }
+        public TimeSpan? CheckInTime { get; set; }
+        public TimeSpan? CheckOutTime { get; set; }
+        public decimal? WorkingHours { get; set; }
+        public decimal? OvertimeHours { get; set; }
+        public string? Status { get; set; }
+        public string? Remarks { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public int? ShiftID { get; set; }
+        public string? ShiftName { get; set; }
+    }
+
+    public class LeaveRequestModel
+    {
+        public int LeaveRequestID { get; set; }
+        public int EmployeeID { get; set; }
+        public string? EmployeeCode { get; set; }
+        public string? FullName { get; set; }
+        public int LeaveTypeID { get; set; }
+        public string? LeaveTypeName { get; set; }
+        public DateTime FromDate { get; set; }
+        public DateTime ToDate { get; set; }
+        public decimal NumberOfDays { get; set; }
+        public string? Reason { get; set; }
+        public string? Status { get; set; }
+        public int? ApprovedBy { get; set; }
+        public string? ApprovedByName { get; set; }
+        public DateTime? ApprovedDate { get; set; }
+        public string? Remarks { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class TaskModel
+    {
+        public int TaskID { get; set; }
+        public int EmployeeID { get; set; }
+        public string? EmployeeCode { get; set; }
+        public string? EmployeeName { get; set; }
+        public int AssignedBy { get; set; }
+        public string? AssignedByName { get; set; }
+        public string? TaskTitle { get; set; }
+        public string? TaskDescription { get; set; }
+        public string? Priority { get; set; }
+        public string? Status { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime DueDate { get; set; }
+        public DateTime? CompletedDate { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class AnnouncementModel
+    {
+        public int AnnouncementID { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public DateTime PublishDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public int CreatedBy { get; set; }
+        public string? CreatedByName { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

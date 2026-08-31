@@ -1,0 +1,16 @@
+@model List<AdminPannel.Models.LeaveRequestModel>
+@{ var canDecide = User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Manager"); }
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4"><div><span class="text-primary fw-semibold">PEOPLE OPERATIONS</span><h1>Leave requests</h1><p class="text-secondary">Review leave balances and approvals in one place.</p></div><a class="btn btn-primary" asp-action="LeaveCreate">Request leave</a></div>
+  <div class="card"><div class="card-header"><h3 class="card-title">Request directory</h3></div><div class="card-body table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Employee</th><th>Leave type</th><th>Period</th><th>Days</th><th>Reason</th><th>Status</th><th>Approved by</th><th>Actions</th></tr></thead><tbody>
+  @if (Model.Count == 0) { <tr><td colspan="8" class="text-center text-secondary py-5">No leave requests found.</td></tr> }
+  @foreach (var row in Model)
+  {
+    var badge = row.Status == "Approved" ? "success" : row.Status == "Rejected" ? "danger" : row.Status == "Cancelled" ? "secondary" : "warning";
+    <tr><td><strong>@(row.FullName ?? "Employee")</strong><small class="d-block text-secondary">@row.EmployeeCode</small></td><td>@row.LeaveTypeName</td><td>@row.FromDate.ToString("dd-MMM-yyyy") – @row.ToDate.ToString("dd-MMM-yyyy")</td><td>@row.NumberOfDays.ToString("0.##")</td><td>@row.Reason</td><td><span class="badge text-bg-@badge">@row.Status</span></td><td>@(row.ApprovedByName ?? "—")</td><td>
+    @if (row.Status == "Pending" && canDecide) { <form asp-action="LeaveDecision" method="post" class="d-inline"><input type="hidden" name="id" value="@row.LeaveRequestID"/><input type="hidden" name="decision" value="Approved"/><button class="btn btn-sm btn-outline-success">Approve</button></form><form asp-action="LeaveDecision" method="post" class="d-inline ms-1"><input type="hidden" name="id" value="@row.LeaveRequestID"/><input type="hidden" name="decision" value="Rejected"/><button class="btn btn-sm btn-outline-danger">Reject</button></form> }
+    @if (row.Status == "Pending" && User.IsInRole("Employee")) { <form asp-action="LeaveCancel" method="post" class="d-inline"><input type="hidden" name="id" value="@row.LeaveRequestID"/><button class="btn btn-sm btn-outline-danger">Cancel</button></form> }
+    </td></tr>
+  }
+  </tbody></table></div></div>
+</div>

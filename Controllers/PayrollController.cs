@@ -66,6 +66,12 @@ public class PayrollController : Controller
             ViewBag.Employees = Employees();
             return View(request);
         }
+        if (!IsEmployeeReadyForPayroll(request.EmployeeID))
+        {
+            ModelState.AddModelError(string.Empty, "This employee is not ready for payroll. Complete the onboarding workspace first.");
+            ViewBag.Employees = Employees();
+            return View(request);
+        }
         try
         {
             var result = _app.SelectModel<PayrollModel>("Procs_GeneratePayroll", request);
@@ -76,6 +82,15 @@ public class PayrollController : Controller
         catch (Exception) { ModelState.AddModelError(string.Empty, "Unable to generate payroll."); }
         ViewBag.Employees = Employees();
         return View(request);
+    }
+
+    private bool IsEmployeeReadyForPayroll(int employeeId)
+    {
+        var employee = Employees().FirstOrDefault(x => x.EmployeeID == employeeId);
+        if (employee == null || !employee.IsActive || employee.DepartmentID <= 0 || employee.DesignationID <= 0 || employee.OfficeLocationID <= 0 || !employee.JoiningDate.HasValue || string.IsNullOrWhiteSpace(employee.EmploymentType)) return false;
+        var salary = _app.SelectModelList<SalaryMasterModel>("Procs_GetSalaryMaster", new { EmployeeID = employeeId, SalaryMasterID = (int?)null, IsActive = (bool?)true });
+        var account = _app.SelectModelList<UserResponse>("Procs_GetUsers", new { UserID = (int?)null, EmployeeID = employeeId, RoleID = (int?)null, IsActive = (bool?)true, Search = (string?)null });
+        return salary.Any() && account.Any();
     }
 
     [HttpPost]
@@ -281,9 +296,22 @@ public class PayrollController : Controller
 
     [HttpGet("Payroll/SalaryMaster/Create")]
     [Authorize(Policy = AuthorizationPolicies.HrAccess)]
- public IActionResult CreateSalaryRevision()    {
-           ViewBag.Employees = Employees();
-        return View("SalaryRevision", new SalaryRevisionModel());
+ public IActionResult CreateSalaryRevision(int? employeeId)    {
+           var employees = Employees();
+           ViewBag.Employees = employees;
+           var request = new SalaryRevisionModel { EffectiveFrom = DateTime.Today };
+           if (employeeId.HasValue && employeeId.Value > 0)
+           {
+               var employee = employees.FirstOrDefault(x => x.EmployeeID == employeeId.Value);
+               if (employee != null)
+               {
+                   request.EmployeeID = employee.EmployeeID;
+                   var existing = _app.SelectModelList<SalaryMasterModel>("Procs_GetSalaryMaster", new { EmployeeID = employee.EmployeeID, SalaryMasterID = (int?)null, IsActive = (bool?)true });
+                   if (!existing.Any()) request.BasicSalary = employee.BasicSalary;
+                   ViewBag.EmployeeContext = GetEmployeeContext(employee.EmployeeID);
+               }
+           }
+        return View("SalaryRevision", request);
     }
 
     [HttpPost("Payroll/SalaryMaster/Create")]
@@ -365,10 +393,13 @@ public class PayrollController : Controller
 
     [HttpGet("Payroll/TaxMaster/Create")]
     [Authorize(Policy = AuthorizationPolicies.HrAccess)]
-    public IActionResult CreateTaxRevision()
+    public IActionResult CreateTaxRevision(int? employeeId)
     {
         ViewBag.Employees = Employees();
-        return View("TaxRevision", new TaxRevisionModel());
+        var model = new TaxRevisionModel { EmployeeID = employeeId.GetValueOrDefault() };
+        if (model.EmployeeID > 0)
+            ViewBag.EmployeeContext = GetEmployeeContext(model.EmployeeID);
+        return View("TaxRevision", model);
     }
 
     [HttpPost("Payroll/TaxMaster/Create")]
