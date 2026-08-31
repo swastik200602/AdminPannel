@@ -33,6 +33,7 @@
             @if (canManage)
             {
                 <a asp-action="Edit" asp-route-id="@Model.EmployeeID" class="btn btn-success">Edit</a>
+                <a asp-action="Onboarding" asp-route-employeeId="@Model.EmployeeID" class="btn btn-primary">Onboarding progress</a>
             }
             else if (User.IsInRole("Employee"))
             {

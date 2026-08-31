@@ -1,111 +1,72 @@
 @model IEnumerable<AdminPannel.Models.UserResponse>
+@using System.Text.Json
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "User Accounts";
-    var employees = ViewBag.Employees as IEnumerable<AdminPannel.Models.EmployeeResponse> ??
-Enumerable.Empty<AdminPannel.Models.EmployeeResponse>();
-    var roles = ViewBag.Roles as IEnumerable<AdminPannel.Models.RoleResponse> ??
-Enumerable.Empty<AdminPannel.Models.RoleResponse>();
+    var users = Model?.ToList() ?? new List<AdminPannel.Models.UserResponse>();
+    var employees = ViewBag.Employees as IEnumerable<AdminPannel.Models.EmployeeResponse> ?? Enumerable.Empty<AdminPannel.Models.EmployeeResponse>();
+    var roles = ViewBag.Roles as IEnumerable<AdminPannel.Models.RoleResponse> ?? Enumerable.Empty<AdminPannel.Models.RoleResponse>();
+    var activeEmployeeIds = users.Where(x => x.IsActive).Select(x => x.EmployeeID).ToHashSet();
+    var employeeJson = JsonSerializer.Serialize(employees.Select(x => new { id = x.EmployeeID, email = x.Email, phone = x.PhoneNumber }));
 }
-<div class="app-content-header">
-    <div class="container-fluid">
-        <h1 class="fs-3">User Accounts</h1>
-    </div>
-</div>
-<div class="app-content">
-    <div class="container-fluid">
-        @if (TempData["UserError"] != null)
-        {
-            <div class="alert alert-danger">@TempData["UserError"]</div>
-        }
-        @if (TempData["UserMessage"] != null)
-        {
-            <div class="alert alert-success">@TempData["UserMessage"]</div>
-        }
-        @if (TempData["TemporaryPassword"] != null)
-        {
-            <div class="alert alert-warning"><strong>Temporary credentials (show once):</strong><br />Username:
-                <code>@TempData["CreatedUsername"]</code><br />Password:
-                <code>@TempData["TemporaryPassword"]</code><br /><small>Deliver this securely and require a password change
-                as soon as password-change support is enabled.</small></div>
-            }
-            @if (ViewBag.Error != null)
-            {
-                <div class="alert alert-danger">@ViewBag.Error</div>
-            }
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h2 class="h5 mb-0">Create account</h2>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Create" method="post" class="row g-2">@Html.AntiForgeryToken()
-                        <div class="col-md-3"><label class="form-label">Employee</label><select name="EmployeeID"
-                                                                                                class="form-select" required>
-                            <option value="">Select employee</option>@foreach (var e in employees) {
-                            <option
-                            value="@e.EmployeeID">@e.FullName (@e.EmployeeCode) - current role: @(string.IsNullOrWhiteSpace(e.RoleName) ? "Unassigned" : e.RoleName)</option>
-                        }
-                    </select></div>
-                    <div class="col-md-2"><label class="form-label">Role</label><select name="RoleID"
-                                                                                        class="form-select" required>
-                        <option value="">Select role</option>@foreach (var r in roles) {
-                        if (r.RoleID != 0 || User.IsInRole("Admin")) {
-                        <option value="@r.RoleID">
-                            @r.RoleName</option>
-                        }
-                        }
-                    </select></div>
-                    <div class="col-md-2"><label class="form-label">Username</label><input name="UserName"
-                                                                                               class="form-control" required /></div>
-                        <div class="col-md-2"><label class="form-label">Email</label><input name="Email" type="email"
-                                                                                                class="form-control" /></div>
-                            <div class="col-md-2"><label class="form-label">Mobile</label><input name="MobileNo"
-                                                                                                     class="form-control" /></div>
-                                <div class="col-md-1 d-flex align-items-end"><button class="btn btn-primary"
-                                                                                         type="submit">Create</button></div>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-body table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Employee</th>
-                                            <th>Username</th>
-                                            <th>Role</th>
-                                            <th>Status</th>
-                                            <th>Last login</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var user in Model)
-                                        {
-                                            <tr>
-                                                <td>@user.FullName (@user.EmployeeCode)</td>
-                                                <td>@user.UserName</td>
-                                                <td>@user.RoleName</td>
-                                                <td>@(user.IsActive ? "Active" : "Inactive")</td>
-                                                <td>@user.LastLogin?.ToString("yyyy-MM-dd HH:mm")</td>
-                                                <td>@if (user.IsActive) {
-                                                    <form asp-action="Delete" asp-route-id="@user.UserID"
-                                                          method="post" class="d-inline">@Html.AntiForgeryToken()<button
-                                                        class="btn btn-sm btn-outline-danger" type="submit">Deactivate</button></form>
-                                                    }
-                                else
-                                                    {
 
-                                                        <form asp-action="Activate" asp-route-id="@user.UserID" method="post"
-                                                              class="d-inline">@Html.AntiForgeryToken()<button
-                                                            class="btn btn-sm btn-outline-success" type="submit">Activate</button></form>
-                                                        }
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<div class="app-content-header"><div class="container-fluid"><div class="d-flex justify-content-between align-items-start gap-3"><div><div class="text-uppercase small text-primary fw-semibold">People &amp; access</div><h1 class="fs-3 mb-1">User Accounts</h1><p class="text-body-secondary mb-0">Provision secure application access for your workforce and manage account status.</p></div><a href="#create-account" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Create user account</a></div></div></div>
+<div class="app-content"><div class="container-fluid user-page-stack"><style>
+    .user-page-stack { display: flex; flex-direction: column; }
+    .user-page-stack > .alert { order: 0; }
+    .user-page-stack > .row { order: 1; }
+    .user-page-stack > #create-account { order: 2; }
+    .user-page-stack > .card:has(form[method="get"]) { order: 3; }
+    .user-page-stack > .card:not(:has(form[method="get"])):not(#create-account) { order: 4; }
+</style>
+    @if (TempData["UserError"] != null) { <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>@TempData["UserError"]</div> }
+    @if (TempData["UserMessage"] != null) { <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>@TempData["UserMessage"]</div> }
+    @if (ViewBag.Error != null) { <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>@ViewBag.Error</div> }
+
+    <div class="row g-3 mb-3"><div class="col-md-4"><div class="card h-100 border-start border-primary border-4"><div class="card-body"><div class="small text-body-secondary text-uppercase">Total accounts</div><div class="fs-2 fw-semibold">@users.Count</div><div class="small text-body-secondary">Linked employee sign-in accounts.</div></div></div></div><div class="col-md-4"><div class="card h-100 border-start border-success border-4"><div class="card-body"><div class="small text-body-secondary text-uppercase">Active</div><div class="fs-2 fw-semibold">@users.Count(x => x.IsActive)</div><div class="small text-body-secondary">Accounts currently allowed to sign in.</div></div></div></div><div class="col-md-4"><div class="card h-100 border-start border-warning border-4"><div class="card-body"><div class="small text-body-secondary text-uppercase">Needs attention</div><div class="fs-2 fw-semibold">@users.Count(x => !x.IsActive)</div><div class="small text-body-secondary">Inactive accounts available for review.</div></div></div></div></div>
+
+<div class="card mb-3"><div class="card-body"><form asp-action="Index" method="get" class="row g-3 align-items-end"><div class="col-lg-4"><label class="form-label">Search accounts</label><div class="input-group"><span class="input-group-text"><i class="bi bi-search"></i></span><input name="search" value="@ViewBag.Search" class="form-control" placeholder="Name, username, email or code" /></div></div><div class="col-lg-2"><label class="form-label">Employee</label><select name="employeeId" class="form-select"><option value="">All employees</option>@foreach(var e in employees){<option value="@e.EmployeeID" selected="@(ViewBag.EmployeeId is int selectedEmployeeId && selectedEmployeeId == e.EmployeeID ? "selected" : null)">@e.FullName (@e.EmployeeCode)</option>}</select></div><div class="col-lg-2"><label class="form-label">Role</label><select name="roleId" class="form-select"><option value="">All roles</option>@foreach(var r in roles){<option value="@r.RoleID" selected="@(ViewBag.RoleId is int selectedRoleId && selectedRoleId == r.RoleID ? "selected" : null)">@r.RoleName</option>}</select></div><div class="col-lg-2"><label class="form-label">Status</label><select name="isActive" class="form-select"><option value="">All statuses</option><option value="true" selected="@(ViewBag.IsActive is bool b && b ? "selected" : null)">Active</option><option value="false" selected="@(ViewBag.IsActive is bool b2 && !b2 ? "selected" : null)">Inactive</option></select></div><div class="col-lg-2 d-flex gap-2"><button class="btn btn-primary flex-grow-1" type="submit">Filter</button><a asp-action="Index" class="btn btn-outline-secondary">Clear</a></div></form></div></div>
+
+    <div class="card mb-3" id="create-account"><div class="card-header"><div><h2 class="h5 mb-1">Create account</h2><p class="small text-body-secondary mb-0">Link one active employee to an application role. A temporary password is generated by the existing account flow.</p></div></div><div class="card-body"><form asp-action="Create" method="post" id="createUserForm">@Html.AntiForgeryToken()<div class="row g-3"><div class="col-lg-4"><label class="form-label">Employee <span class="text-danger">*</span></label><select name="EmployeeID" id="EmployeeID" class="form-select" required><option value="">Select employee</option>@foreach(var e in employees.Where(x=>x.IsActive)){<option value="@e.EmployeeID" disabled="@activeEmployeeIds.Contains(e.EmployeeID)">@e.FullName (@e.EmployeeCode)@(activeEmployeeIds.Contains(e.EmployeeID)?" — account already active":"")</option>}</select><div class="form-text">Only employees without an active account can be selected.</div></div><div class="col-lg-3"><label class="form-label">Role <span class="text-danger">*</span></label><select name="RoleID" class="form-select" required><option value="">Select role</option>@foreach(var r in roles){if(r.RoleID != 0 || User.IsInRole("Admin")){<option value="@r.RoleID">@r.RoleName</option>}}</select></div><div class="col-lg-5"><label class="form-label">Username <span class="text-danger">*</span></label><input name="UserName" class="form-control" placeholder="e.g. rahul.sharma" required /><div class="form-text">Use a unique, professional username.</div></div><div class="col-md-6"><label class="form-label">Email</label><input name="Email" id="Email" type="email" class="form-control" placeholder="Auto-filled from employee" /></div><div class="col-md-6"><label class="form-label">Mobile</label><input name="MobileNo" id="MobileNo" class="form-control" placeholder="Auto-filled from employee" /></div></div><div class="d-flex justify-content-end mt-4"><button type="submit" class="btn btn-primary"><i class="bi bi-person-check me-1"></i>Create account</button></div></form></div></div>
+
+    <div class="card"><div class="card-header d-flex justify-content-between align-items-center"><div><h2 class="h5 mb-1">Account directory</h2><p class="small text-body-secondary mb-0">Review access, role and last sign-in for every linked employee.</p></div><span class="badge text-bg-secondary">@users.Count records</span></div><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>Employee</th><th>Work context</th><th>Username</th><th>Role</th><th>Status</th><th>Last login</th><th class="text-end">Actions</th></tr></thead><tbody>@if(!users.Any()){<tr><td colspan="7"><div class="text-center p-5"><i class="bi bi-person-x fs-1 text-body-secondary"></i><h3 class="h5 mt-3">No user accounts found</h3><p class="text-body-secondary mb-0">Adjust the filters or create an account for an employee.</p></div></td></tr>}else{foreach(var user in users){<tr><td><div class="d-flex align-items-center gap-2">@if(!string.IsNullOrWhiteSpace(user.ProfileImage)){<img src="@user.ProfileImage" class="rounded-circle" style="width:42px;height:42px;object-fit:cover" alt="@user.FullName"/>}else{<div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold" style="width:42px;height:42px">@(string.IsNullOrWhiteSpace(user.FullName)?"?":user.FullName.Substring(0,1).ToUpperInvariant())</div>}<div><div class="fw-semibold">@(string.IsNullOrWhiteSpace(user.FullName)?"Employee #"+user.EmployeeID:user.FullName)</div><div class="small text-body-secondary">@user.EmployeeCode</div></div></div></td><td><div>@(user.DesignationName ?? "Not assigned")</div><div class="small text-body-secondary">@(user.DepartmentName ?? "Not assigned")@(string.IsNullOrWhiteSpace(user.OfficeName)?"":" · "+user.OfficeName)</div></td><td><span class="fw-semibold">@user.UserName</span><div class="small text-body-secondary">@user.UserEmail</div></td><td><span class="badge rounded-pill text-bg-info">@(user.RoleName ?? "Unassigned")</span></td><td><span class="badge rounded-pill @(user.IsActive?"text-bg-success":"text-bg-secondary")">@(user.IsActive?"Active":"Inactive")</span></td><td>@(user.LastLogin?.ToString("dd-MMM-yyyy HH:mm") ?? "Never")</td><td class="text-end text-nowrap">@if(user.IsActive){<form asp-action="Delete" asp-route-id="@user.UserID" method="post" class="d-inline" onsubmit="return confirm('Deactivate this user account?');">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-person-dash me-1"></i>Deactivate</button></form>}else{<form asp-action="Activate" asp-route-id="@user.UserID" method="post" class="d-inline" onsubmit="return confirm('Activate this user account?');">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-success" type="submit"><i class="bi bi-person-check me-1"></i>Activate</button></form>}</td></tr>}} </tbody></table></div></div></div>
+</div></div>
+@section Scripts { <script>
+    const employees=@Html.Raw(employeeJson);
+    const accountEmployeeIds=@Html.Raw(JsonSerializer.Serialize(users.Select(x=>x.EmployeeID).ToArray()));
+    const accountKpis={total:@(ViewBag.TotalAccounts is int totalAccounts ? totalAccounts : users.Count),active:@(ViewBag.ActiveAccounts is int activeAccounts ? activeAccounts : users.Count(x=>x.IsActive)),inactive:@(ViewBag.InactiveAccounts is int inactiveAccounts ? inactiveAccounts : users.Count(x=>!x.IsActive))};
+    document.getElementById('EmployeeID')?.addEventListener('change',function(){const e=employees.find(x=>String(x.id)===this.value);if(!e)return;document.getElementById('Email').value=e.email||'';document.getElementById('MobileNo').value=e.phone||'';});
+
+    // Keep the filter toolbar in view after the GET request refreshes the page.
+    const userFilterForm = document.querySelector('form[method="get"]');
+    if (userFilterForm) {
+        const filterCard = userFilterForm.closest('.card');
+        if (filterCard) {
+            filterCard.id = 'user-filters';
+            userFilterForm.addEventListener('submit', function () {
+                this.action = (this.action || window.location.pathname).split('#')[0] + '#user-filters';
+            });
+            if (window.location.hash === '#user-filters') {
+                window.setTimeout(() => filterCard.scrollIntoView({ block: 'start' }), 0);
+            }
+        }
+    }
+
+    // KPI cards remain company-wide while the directory itself is filtered.
+    document.querySelectorAll('.user-page-stack > .row .fs-2').forEach((node,index) => {
+        const values=[accountKpis.total,accountKpis.active,accountKpis.inactive];
+        if (values[index] !== undefined) node.textContent=values[index];
+    });
+
+    // Make each employee record a direct link to the existing profile page.
+    document.querySelectorAll('.user-page-stack table tbody tr').forEach((row,index) => {
+        const employeeId=accountEmployeeIds[index];
+        const cell=row.querySelector('td');
+        if (!employeeId || !cell || cell.querySelector('a')) return;
+        const link=document.createElement('a');
+        link.href='/Employee/Details/'+employeeId;
+        link.className='d-block text-reset text-decoration-none';
+        while (cell.firstChild) link.appendChild(cell.firstChild);
+        cell.appendChild(link);
+    });
+</script> }

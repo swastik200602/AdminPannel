@@ -195,6 +195,15 @@ namespace AdminPannel.Logic
                     commandType: CommandType.StoredProcedure)
                 .ToList();
         }
+
+        // Parameterized read for legacy tables that do not yet have a
+        // corresponding list stored procedure.
+        public List<T> QueryList<T>(string query, object param)
+        {
+            using var con = new SqlConnection(_connection);
+            con.Open();
+            return con.Query<T>(query, param).ToList();
+        }
         public (T1, List<T2>) QueryMultiple<T1, T2>(string procName, object param = null)
         {
             using (IDbConnection con = new SqlConnection(_connection))

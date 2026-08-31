@@ -12,24 +12,61 @@ namespace AdminPannel.Controllers
         private readonly AppData _app = new();
 
         [HttpGet]
-        public IActionResult Index(string? search)
+        public IActionResult Index(string? search, int? employeeId, int? roleId, bool? isActive)
         {
             try
             {
-                ViewBag.Employees = _app.SelectModelList<EmployeeResponse>("Procs_GetEmployees", new
+                var employees = _app.SelectModelList<EmployeeResponse>("Procs_GetEmployees", new
                 {
                     EmployeeID = (int?)null, DepartmentID = (int?)null, DesignationID = (int?)null,
                     OfficeLocationID = (int?)null, ManagerID = (int?)null, ShiftID = (int?)null,
                     RoleID = (int?)null, IsActive = (bool?)null, Search = (string?)null
-                });
+                }) ?? new List<EmployeeResponse>();
+                var departmentRows = _app.SelectModelList<DepartmentLookup>("Procs_GetDepartment", new { DepartmentID = 0, Mode = 3 }) ?? new List<DepartmentLookup>();
+                var designations = _app.SelectModelList<DesignationResponse>("Procs_GetDesignation", new { DesignationID = (int?)null, IsActive = true, Search = (string?)null }) ?? new List<DesignationResponse>();
+                var offices = _app.SelectModelList<OfficeBranchResponse>("Procs_GetOfficeBranch", new { OfficeLocationID = (int?)null, IsActive = true, Search = (string?)null }) ?? new List<OfficeBranchResponse>();
+                var departmentNames = departmentRows.Where(x => x.Id > 0 && !string.IsNullOrWhiteSpace(x.Name)).GroupBy(x => x.Id).ToDictionary(x => x.Key, x => x.First().Name!);
+                var designationNames = designations.ToDictionary(x => x.DesignationID, x => x.DesignationName);
+                var officeNames = offices.ToDictionary(x => x.OfficeLocationID, x => x.OfficeName);
+                foreach (var employee in employees)
+                {
+                    employee.DepartmentName = departmentNames.GetValueOrDefault(employee.DepartmentID);
+                    employee.DesignationName = designationNames.GetValueOrDefault(employee.DesignationID);
+                    employee.OfficeName = officeNames.GetValueOrDefault(employee.OfficeLocationID);
+                }
+                ViewBag.Employees = employees;
                 ViewBag.Roles = _app.SelectModelList<RoleResponse>("Procs_GetRole", new { RoleID = (int?)null, IsActive = true, Search = (string?)null });
                 var users = _app.SelectModelList<UserResponse>("Procs_GetUsers", new
                 {
+                    UserID = (int?)null, EmployeeID = employeeId, RoleID = roleId,
+                    IsActive = isActive, Search = search
+                }) ?? new List<UserResponse>();
+                // KPI cards describe the whole account directory, not the
+                // currently filtered result set.
+                var allUsers = _app.SelectModelList<UserResponse>("Procs_GetUsers", new
+                {
                     UserID = (int?)null, EmployeeID = (int?)null, RoleID = (int?)null,
-                    IsActive = (bool?)null, Search = search
-                });
+                    IsActive = (bool?)null, Search = (string?)null
+                }) ?? new List<UserResponse>();
+                var employeeMap = employees.ToDictionary(x => x.EmployeeID);
+                foreach (var user in users)
+                {
+                    if (employeeMap.TryGetValue(user.EmployeeID, out var employee))
+                    {
+                        user.ProfileImage = employee.ProfileImage;
+                        user.DepartmentName = employee.DepartmentName;
+                        user.DesignationName = employee.DesignationName;
+                        user.OfficeName = employee.OfficeName;
+                    }
+                }
                 ViewBag.Search = search;
-                return View(users ?? new List<UserResponse>());
+                ViewBag.EmployeeId = employeeId;
+                ViewBag.RoleId = roleId;
+                ViewBag.IsActive = isActive;
+                ViewBag.TotalAccounts = allUsers.Count;
+                ViewBag.ActiveAccounts = allUsers.Count(x => x.IsActive);
+                ViewBag.InactiveAccounts = allUsers.Count(x => !x.IsActive);
+                return View(users);
             }
             catch (Exception)
             {
@@ -143,6 +180,12 @@ namespace AdminPannel.Controllers
             Span<byte> bytes = stackalloc byte[16];
             RandomNumberGenerator.Fill(bytes);
             return "123";
+        }
+
+        private sealed class DepartmentLookup
+        {
+            public int Id { get; set; }
+            public string? Name { get; set; }
         }
     }
 }
